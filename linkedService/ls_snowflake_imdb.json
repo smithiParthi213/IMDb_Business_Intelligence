@@ -1,0 +1,17 @@
+{
+	"name": "ls_snowflake_imdb",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SnowflakeV2",
+		"typeProperties": {
+			"authenticationType": "Basic",
+			"accountIdentifier": "ukbimst-mka67867",
+			"user": "ADF_User",
+			"database": "IMDB_DB",
+			"warehouse": "DADABI_WH",
+			"role": "DEV_USER",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDM4NTk4NUIwLTY0QkMtNDE0OC04NjZFLTNBODc3MTE3RDE3NV8xYzJlOTg2ZC01MDNiLTQ5NjQtYjZlOC02YjkxZmFjNTNiNzAiDQp9"
+		}
+	}
+}
