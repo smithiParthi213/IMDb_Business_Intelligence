@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Copy data1",
+				"name": "principals",
 				"type": "Copy",
 				"state": "Inactive",
 				"onInactiveMarkAs": "Succeeded",
@@ -165,6 +165,8 @@
 			{
 				"name": "akas",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.00:30:00",
@@ -340,8 +342,6 @@
 			{
 				"name": "Ratings",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.00:30:00",
@@ -407,56 +407,26 @@
 							},
 							{
 								"source": {
-									"name": "ordering",
+									"name": "averageRating",
 									"type": "String"
 								},
 								"sink": {
-									"name": "ORDERING",
+									"name": "AVERAGERATING",
+									"type": "Double"
+								}
+							},
+							{
+								"source": {
+									"name": "numVotes",
+									"type": "String"
+								},
+								"sink": {
+									"name": "NUMVOTES",
 									"type": "Int64"
 								}
 							},
 							{
 								"source": {
-									"name": "nconst",
-									"type": "String"
-								},
-								"sink": {
-									"name": "NCONST",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "category",
-									"type": "String"
-								},
-								"sink": {
-									"name": "CATEGORY",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "job",
-									"type": "String"
-								},
-								"sink": {
-									"name": "JOB",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
-									"name": "characters",
-									"type": "String"
-								},
-								"sink": {
-									"name": "CHARACTERS",
-									"type": "String"
-								}
-							},
-							{
-								"source": {
 									"name": "DI_JOB_ID",
 									"type": "String"
 								},
@@ -471,7 +441,7 @@
 									"type": "String"
 								},
 								"sink": {
-									"name": "DI_LOAD_DATE",
+									"name": "DI_LOAD_DT",
 									"type": "DateTime"
 								}
 							}
@@ -480,16 +450,16 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "DelimitedText_Principals",
+						"referenceName": "DelimitedText_Ratings",
 						"type": "DatasetReference",
 						"parameters": {
-							"fileName": "TitlePrincipals_Clean.csv"
+							"fileName": "TitleRatings_Clean_new.csv"
 						}
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "Principals_SNF",
+						"referenceName": "SNF_ratings",
 						"type": "DatasetReference"
 					}
 				]

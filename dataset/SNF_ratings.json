@@ -7,6 +7,10 @@
 		},
 		"annotations": [],
 		"type": "SnowflakeV2Table",
-		"schema": []
+		"schema": [],
+		"typeProperties": {
+			"schema": "SILVER",
+			"table": "TITLE_RATINGS_STG"
+		}
 	}
 }
