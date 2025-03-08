@@ -1,5 +1,5 @@
 {
-	"name": "IMDB_SNF",
+	"name": "Principals_SNF",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_snowflake_imdb",

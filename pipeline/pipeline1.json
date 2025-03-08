@@ -157,7 +157,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "IMDB_SNF",
+						"referenceName": "Principals_SNF",
 						"type": "DatasetReference"
 					}
 				]
@@ -165,8 +165,6 @@
 			{
 				"name": "akas",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.00:30:00",
@@ -328,7 +326,7 @@
 						"referenceName": "DelimitedText_Akas",
 						"type": "DatasetReference",
 						"parameters": {
-							"fileName": "TitleAkas.csv"
+							"fileName": "TitleAkas_Clean.csv"
 						}
 					}
 				],
@@ -491,7 +489,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "IMDB_SNF",
+						"referenceName": "Principals_SNF",
 						"type": "DatasetReference"
 					}
 				]
