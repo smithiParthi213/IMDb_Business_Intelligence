@@ -63,33 +63,9 @@
 							"typeProperties": {
 								"source": {
 									"type": "DelimitedTextSource",
-									"additionalColumns": [
-										{
-											"name": "DI_JOB_ID",
-											"value": {
-												"value": "concat('SP-213', pipeline().RunId)",
-												"type": "Expression"
-											}
-										},
-										{
-											"name": "DI_LOAD_DT",
-											"value": {
-												"value": "@utcNow()",
-												"type": "Expression"
-											}
-										}
-									],
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
-										"wildcardFolderPath": {
-											"value": "@item().source_directory",
-											"type": "Expression"
-										},
-										"wildcardFileName": {
-											"value": "@item().source_table",
-											"type": "Expression"
-										},
 										"enablePartitionDiscovery": false
 									},
 									"formatSettings": {
@@ -113,7 +89,17 @@
 							"inputs": [
 								{
 									"referenceName": "Bronze_ADLS",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"directory": {
+											"value": "@item().source_directory",
+											"type": "Expression"
+										},
+										"fileName": {
+											"value": "@item().source_table",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
