@@ -17,19 +17,20 @@
 				"typeProperties": {
 					"source": {
 						"type": "SnowflakeV2Source",
-						"query": "SELECT * FROM metadata_table WHERE is_flatten_req = FALSE;",
+						"query": "select * from lookup.metadata_table where is_flatten_req = FALSE",
 						"exportSettings": {
 							"type": "SnowflakeExportCopyCommand"
 						}
 					},
 					"dataset": {
-						"referenceName": "Snowflake_LookUp_imdb",
+						"referenceName": "Snowflake_LookUp_MetaData_tbl",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
-				"name": "ForEach",
+				"name": "ForEach1",
 				"type": "ForEach",
 				"dependsOn": [
 					{
@@ -42,12 +43,13 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('LookupTables').output.value",
+						"value": "@activity('Lookup_metaData').output.value",
 						"type": "Expression"
 					},
+					"isSequential": false,
 					"activities": [
 						{
-							"name": "CopyDataSetWithoutTrans",
+							"name": "SilverCopyLoad_001",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -80,7 +82,10 @@
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
-										"wildcardFolderPath": "@item().source_path",
+										"wildcardFolderPath": {
+											"value": "@item().source_path",
+											"type": "Expression"
+										},
 										"wildcardFileName": "@item().file_format",
 										"enablePartitionDiscovery": false
 									},
@@ -104,7 +109,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "ADLS_Bronze_imdb",
+									"referenceName": "Bronze_ADLS",
 									"type": "DatasetReference"
 								}
 							],
@@ -114,7 +119,7 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"tableName": {
-											"value": "@{item().target_table}\n",
+											"value": "@item().target_table",
 											"type": "Expression"
 										}
 									}

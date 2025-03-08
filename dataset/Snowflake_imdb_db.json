@@ -15,7 +15,10 @@
 		"schema": [],
 		"typeProperties": {
 			"schema": "SILVER",
-			"table": "TITLE_RATINGS_STG"
+			"table": {
+				"value": "@dataset().tableName",
+				"type": "Expression"
+			}
 		}
 	}
 }
