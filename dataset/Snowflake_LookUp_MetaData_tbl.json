@@ -1,0 +1,33 @@
+{
+	"name": "Snowflake_LookUp_MetaData_tbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_snowflake_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [
+			{
+				"name": "SOURCE_PATH",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "FILE_FORMAT",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "TARGET_TABLE",
+				"type": "VARCHAR"
+			},
+			{
+				"name": "IS_FLATTEN_REQ",
+				"type": "BOOLEAN"
+			}
+		],
+		"typeProperties": {
+			"schema": "LOOKUP",
+			"table": "METADATA_TABLE"
+		}
+	}
+}

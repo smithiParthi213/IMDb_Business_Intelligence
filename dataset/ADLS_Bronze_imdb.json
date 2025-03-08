@@ -1,0 +1,22 @@
+{
+	"name": "ADLS_Bronze_imdb",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
