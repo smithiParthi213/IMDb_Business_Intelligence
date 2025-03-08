@@ -88,13 +88,9 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "Bronze_ADLS",
+									"referenceName": "Bronze_ADLS_002",
 									"type": "DatasetReference",
 									"parameters": {
-										"directory": {
-											"value": "@item().source_directory",
-											"type": "Expression"
-										},
 										"fileName": {
 											"value": "@item().source_table",
 											"type": "Expression"
