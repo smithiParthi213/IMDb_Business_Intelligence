@@ -83,10 +83,13 @@
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
 										"wildcardFolderPath": {
-											"value": "@item().source_path",
+											"value": "@item().source_directory",
 											"type": "Expression"
 										},
-										"wildcardFileName": "@item().file_format",
+										"wildcardFileName": {
+											"value": "@item().source_table",
+											"type": "Expression"
+										},
 										"enablePartitionDiscovery": false
 									},
 									"formatSettings": {
@@ -119,7 +122,11 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"tableName": {
-											"value": "@item().target_table",
+											"value": "@item().target_table_name",
+											"type": "Expression"
+										},
+										"schema": {
+											"value": "@item().TARGET_SCHEMA",
 											"type": "Expression"
 										}
 									}

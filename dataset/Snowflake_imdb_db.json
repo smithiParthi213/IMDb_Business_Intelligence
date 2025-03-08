@@ -8,13 +8,19 @@
 		"parameters": {
 			"tableName": {
 				"type": "string"
+			},
+			"schema": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
 		"type": "SnowflakeV2Table",
 		"schema": [],
 		"typeProperties": {
-			"schema": "SILVER",
+			"schema": {
+				"value": "@dataset().schema",
+				"type": "Expression"
+			},
 			"table": {
 				"value": "@dataset().tableName",
 				"type": "Expression"

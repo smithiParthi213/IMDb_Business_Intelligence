@@ -12,7 +12,7 @@
 				"type": "AzureBlobFSLocation",
 				"fileSystem": "bronze"
 			},
-			"columnDelimiter": ",",
+			"columnDelimiter": "\t",
 			"escapeChar": "\\",
 			"firstRowAsHeader": true,
 			"quoteChar": "\""
