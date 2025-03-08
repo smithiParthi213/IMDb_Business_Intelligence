@@ -63,6 +63,22 @@
 							"typeProperties": {
 								"source": {
 									"type": "DelimitedTextSource",
+									"additionalColumns": [
+										{
+											"name": "DI_JOB_ID",
+											"value": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											}
+										},
+										{
+											"name": "DI_LOAD_DT",
+											"value": {
+												"value": "@utcNow()",
+												"type": "Expression"
+											}
+										}
+									],
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
@@ -100,15 +116,15 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "Snowflake_imdb_db",
+									"referenceName": "Snowflake_Silver_002",
 									"type": "DatasetReference",
 									"parameters": {
-										"tableName": {
-											"value": "@item().target_table_name",
+										"schema": {
+											"value": "@replace(item().TARGET_SCHEMA, '\"', '')",
 											"type": "Expression"
 										},
-										"schema": {
-											"value": "@item().TARGET_SCHEMA",
+										"target_table_name": {
+											"value": "@replace(item().TARGET_TABLE_NAME, '\"', '')",
 											"type": "Expression"
 										}
 									}
