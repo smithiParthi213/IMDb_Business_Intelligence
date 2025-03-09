@@ -1,0 +1,84 @@
+{
+	"name": "DF_TitleCrew_Flatten",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText_TitleCrew",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCrew"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSnowflake"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AdditionalColumn"
+				},
+				{
+					"name": "flattenDirectors"
+				},
+				{
+					"name": "flattenWriters"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"Dale_06\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          directors as string,",
+				"          writers as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceCrew",
+				"sourceCrew derive(directors = split(directors, ','),",
+				"          DI_JOB_ID = $job_id,",
+				"          DI_LOAD_DT = currentDate(),",
+				"          writers = split(writers, ',')) ~> AdditionalColumn",
+				"flattenWriters foldDown(unroll(directors),",
+				"     mapColumn(",
+				"          tconst,",
+				"          directors,",
+				"          writers,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flattenDirectors",
+				"AdditionalColumn foldDown(unroll(writers),",
+				"     mapColumn(",
+				"          tconst,",
+				"          directors,",
+				"          writers,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flattenWriters",
+				"flattenDirectors sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true) ~> sinkSnowflake"
+			]
+		}
+	}
+}
