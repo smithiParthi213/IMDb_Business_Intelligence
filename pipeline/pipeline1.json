@@ -51,7 +51,7 @@
 					"enableStaging": true,
 					"stagingSettings": {
 						"linkedServiceName": {
-							"referenceName": "BLOB_SAMPLE_AN",
+							"referenceName": "linkedService1",
 							"type": "LinkedServiceReference"
 						}
 					},
