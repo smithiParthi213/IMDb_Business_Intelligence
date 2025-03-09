@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_Profession_dim",
+						"referenceName": "DF_Profession_dim",
 						"type": "DataFlowReference",
 						"parameters": {
 							"JOB_ID": "\"Dale_06\""

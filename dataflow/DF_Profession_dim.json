@@ -1,5 +1,5 @@
 {
-	"name": "df_Profession_dim",
+	"name": "DF_Profession_dim",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
