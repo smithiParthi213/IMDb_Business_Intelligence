@@ -78,7 +78,7 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
 				"     mapColumn(",
-				"          ProfessionID_SK,",
+				"          PROFESSIONID_SK = ProfessionID_SK,",
 				"          PROFESSION_NAME = PRIMARYPROFESSION,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT = DI_LOAD_DATE",
