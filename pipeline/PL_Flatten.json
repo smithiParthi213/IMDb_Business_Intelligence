@@ -1,0 +1,93 @@
+{
+	"name": "PL_Flatten",
+	"properties": {
+		"activities": [
+			{
+				"name": "TitleCrew_DF",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_TitleCrew_Flatten",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"sinkSnowflake": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_CREW_STG",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "TitleBasics_DF",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "TitleCrew_DF",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_TitleBasics_Flatten",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_Id": "\"SP_21\""
+						},
+						"datasetParameters": {
+							"sink1": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_BASICS_STG",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

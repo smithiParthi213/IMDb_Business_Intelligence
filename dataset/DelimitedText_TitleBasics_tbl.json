@@ -1,0 +1,24 @@
+{
+	"name": "DelimitedText_TitleBasics_tbl",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "TitleBasics_Clean.csv",
+				"folderPath": "datasets_with_transformations",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": "\t",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
