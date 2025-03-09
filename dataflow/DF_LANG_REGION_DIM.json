@@ -1,5 +1,5 @@
 {
-	"name": "DF_LANGUAGE_DIM",
+	"name": "DF_LANG_REGION_DIM",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -66,6 +66,7 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     limit: 300,",
 				"     ignoreNoFilesFound: false) ~> LanguageSource",
 				"source(output(",
 				"          country_code as string,",
@@ -73,6 +74,7 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     limit: 300,",
 				"     ignoreNoFilesFound: false) ~> RegionSource",
 				"LanguageSource keyGenerate(output(LanguageID_SK as long),",
 				"     startAt: 1L,",
@@ -120,7 +122,15 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sink1",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          LANGUAGEID_SK = LanguageID_SK,",
+				"          ISO_LANGUAGE_NAMES = {ISO Language Names},",
+				"          LANGUAGE_ABBR = Language_Abbr,",
+				"          ENDONYMS = {Endonym(s)},",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT = DI_LOAD_DATE",
+				"     )) ~> sink1",
 				"select2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -137,7 +147,14 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sink2"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          COUNTRYID_SK = CountryID_SK,",
+				"          COUNTRY_CODE = country_code,",
+				"          COUNTRY_NAME = country_name,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT = DI_LOAD_DATE",
+				"     )) ~> sink2"
 			]
 		}
 	}
