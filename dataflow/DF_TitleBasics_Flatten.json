@@ -1,0 +1,96 @@
+{
+	"name": "DF_TitleBasics_Flatten",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText_TitleBasics_tbl",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTitleBasicsTable"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AddidingDIColumns"
+				},
+				{
+					"name": "FlattenGenre"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_Id as string (\"SP_21\")",
+				"}",
+				"source(output(",
+				"          tconst as string,",
+				"          titleType as string,",
+				"          primaryTitle as string,",
+				"          originalTitle as string,",
+				"          isAdult as integer,",
+				"          startYear as short,",
+				"          endYear as short,",
+				"          runtimeMinutes as short,",
+				"          genres as string,",
+				"          yearStatus_Flag as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> SourceTitleBasicsTable",
+				"SourceTitleBasicsTable derive(genres = split(genres, ','),",
+				"          DI_JOB_ID = $job_Id,",
+				"          DI_LOAD_DT = currentDate()) ~> AddidingDIColumns",
+				"AddidingDIColumns foldDown(unroll(genres),",
+				"     mapColumn(",
+				"          TCONST = tconst,",
+				"          TITLETYPE = titleType,",
+				"          PRIMARYTITLE = primaryTitle,",
+				"          ORIGINALTITLE = originalTitle,",
+				"          ISADULT = isAdult,",
+				"          STARTYEAR = startYear,",
+				"          ENDYEAR = endYear,",
+				"          RUNTIMEMINUTES = runtimeMinutes,",
+				"          GENRES = genres,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> FlattenGenre",
+				"FlattenGenre sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          GENRES,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
