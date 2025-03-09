@@ -1,0 +1,30 @@
+{
+	"name": "SNF_SILVER_003",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_snowflake_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"schema": {
+				"type": "string"
+			},
+			"target_table_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().schema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().target_table_name",
+				"type": "Expression"
+			}
+		}
+	}
+}
