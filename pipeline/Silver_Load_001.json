@@ -94,24 +94,12 @@
 										"type": "SnowflakeImportCopyCommand"
 									}
 								},
-								"enableStaging": true,
-								"stagingSettings": {
-									"linkedServiceName": {
-										"referenceName": "ls_blobStorage_imdb",
-										"type": "LinkedServiceReference"
-									}
-								}
+								"enableStaging": true
 							},
 							"inputs": [
 								{
-									"referenceName": "Bronze_ADLS_002",
-									"type": "DatasetReference",
-									"parameters": {
-										"fileName": {
-											"value": "@item().source_table",
-											"type": "Expression"
-										}
-									}
+									"referenceName": "BRONZE_ADLS_005",
+									"type": "DatasetReference"
 								}
 							],
 							"outputs": [
