@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "MidtermGroup5"
+		},
+		"ls_adls_imdb_accountKey": {
+			"value": ""
+		},
+		"ls_blob_imdb_connectionString": {
+			"value": ""
+		},
+		"ls_snowflake_imdb_password": {
+			"value": ""
+		},
+		"ls_adls_imdb_properties_typeProperties_url": {
+			"value": "https://midtermadls5.dfs.core.windows.net/"
+		},
+		"ls_snowflake_imdb_properties_typeProperties_database": {
+			"value": "IMDB_DB"
+		},
+		"ls_snowflake_imdb_properties_typeProperties_role": {
+			"value": "DEV_USER"
+		}
+	}
+}

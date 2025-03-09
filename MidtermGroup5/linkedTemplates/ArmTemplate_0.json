@@ -1,0 +1,92 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "MidtermGroup5"
+		},
+		"ls_adls_imdb_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_adls_imdb'"
+		},
+		"ls_blob_imdb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_blob_imdb'"
+		},
+		"ls_snowflake_imdb_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_snowflake_imdb'"
+		},
+		"ls_adls_imdb_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://midtermadls5.dfs.core.windows.net/"
+		},
+		"ls_snowflake_imdb_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "IMDB_DB"
+		},
+		"ls_snowflake_imdb_properties_typeProperties_role": {
+			"type": "string",
+			"defaultValue": "DEV_USER"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adls_imdb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adls_imdb_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_adls_imdb_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_blob_imdb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_blob_imdb_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_snowflake_imdb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SnowflakeV2",
+				"typeProperties": {
+					"authenticationType": "Basic",
+					"accountIdentifier": "ukbimst-mka67867",
+					"user": "ADF_User",
+					"database": "[parameters('ls_snowflake_imdb_properties_typeProperties_database')]",
+					"warehouse": "DADABI_WH",
+					"role": "[parameters('ls_snowflake_imdb_properties_typeProperties_role')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_snowflake_imdb_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
