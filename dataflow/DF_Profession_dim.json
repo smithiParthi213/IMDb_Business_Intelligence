@@ -1,0 +1,89 @@
+{
+	"name": "DF_Profession_dim",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcNameBasic"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkProfession"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AdditionalColumns"
+				},
+				{
+					"name": "RequiredColumns"
+				},
+				{
+					"name": "RemoveDuplicates"
+				},
+				{
+					"name": "ProfessionIDSK"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"Dale_06\")",
+				"}",
+				"source(output(",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(38,0),",
+				"          DEATHYEAR as decimal(38,0),",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcNameBasic",
+				"RequiredColumns derive(DI_LOAD_DATE = currentDate(),",
+				"          DI_JOB_ID = $JOB_ID) ~> AdditionalColumns",
+				"srcNameBasic select(mapColumn(",
+				"          PRIMARYPROFESSION",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequiredColumns",
+				"AdditionalColumns aggregate(groupBy(PRIMARYPROFESSION),",
+				"     PROFESSION_NAME = first(PRIMARYPROFESSION),",
+				"          DI_JOB_ID = first(DI_JOB_ID),",
+				"          DI_LOAD_DATE = first(DI_LOAD_DATE)) ~> RemoveDuplicates",
+				"RemoveDuplicates keyGenerate(output(ProfessionID_SK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> ProfessionIDSK",
+				"ProfessionIDSK sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          PROFESSIONID_SK = ProfessionID_SK,",
+				"          PROFESSION_NAME = PRIMARYPROFESSION,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT = DI_LOAD_DATE",
+				"     )) ~> sinkProfession"
+			]
+		}
+	}
+}
