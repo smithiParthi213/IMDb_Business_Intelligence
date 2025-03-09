@@ -1,0 +1,16 @@
+{
+	"name": "Ratings_SNF",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_snowflake_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "SILVER",
+			"table": "TITLE_RATINGS_STG"
+		}
+	}
+}
