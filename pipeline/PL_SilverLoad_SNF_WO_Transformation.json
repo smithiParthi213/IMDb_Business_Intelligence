@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "PL_SilverLoad_SNF_WO_Transformation",
 	"properties": {
 		"activities": [
 			{
@@ -163,7 +163,14 @@
 			{
 				"name": "akas",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "principals",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.00:30:00",
 					"retry": 0,
@@ -338,7 +345,14 @@
 			{
 				"name": "Ratings",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "akas",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.00:30:00",
 					"retry": 0,
@@ -463,7 +477,14 @@
 			{
 				"name": "Episodes",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Ratings",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.00:30:00",
 					"retry": 0,
