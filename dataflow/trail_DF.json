@@ -18,7 +18,7 @@
 						"referenceName": "snf_silver_002",
 						"type": "DatasetReference"
 					},
-					"name": "sink1"
+					"name": "sinkSilver002"
 				}
 			],
 			"transformations": [
@@ -47,7 +47,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sink1"
+				"     stageInsert: true) ~> sinkSilver002"
 			]
 		}
 	}
