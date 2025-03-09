@@ -1,5 +1,5 @@
 {
-	"name": "DF_Sample",
+	"name": "DF_TitleBasics_Flatten",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -9,16 +9,24 @@
 						"referenceName": "DelimitedText_TitleBasics_tbl",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "SourceTitleBasicsTable"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkSnfTitleBasics"
+				}
+			],
 			"transformations": [
 				{
 					"name": "AddidingDIColumns"
 				},
 				{
-					"name": "flatten1"
+					"name": "FlattenGenre"
 				}
 			],
 			"scriptLines": [
@@ -39,20 +47,37 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     limit: 100,",
-				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 derive(genres = split(genres, ','),",
+				"     ignoreNoFilesFound: false) ~> SourceTitleBasicsTable",
+				"SourceTitleBasicsTable derive(genres = split(genres, ','),",
 				"          DI_JOB_ID = $job_Id,",
 				"          DI_LOAD_DT = currentDate()) ~> AddidingDIColumns",
 				"AddidingDIColumns foldDown(unroll(genres),",
 				"     mapColumn(",
-				"          tconst,",
-				"          genres,",
+				"          TCONST = tconst,",
+				"          TITLETYPE = titleType,",
+				"          PRIMARYTITLE = primaryTitle,",
+				"          ORIGINALTITLE = originalTitle,",
+				"          ISADULT = isAdult,",
+				"          STARTYEAR = startYear,",
+				"          ENDYEAR = endYear,",
+				"          RUNTIMEMINUTES = runtimeMinutes,",
+				"          GENRES = genres,",
+				"          yearStatus_Flag,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> flatten1"
+				"     skipDuplicateMapOutputs: false) ~> FlattenGenre",
+				"FlattenGenre sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true) ~> sinkSnfTitleBasics"
 			]
 		}
 	}

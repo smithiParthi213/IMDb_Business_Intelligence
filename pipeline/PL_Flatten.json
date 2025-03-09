@@ -1,10 +1,12 @@
 {
-	"name": "PL_TitleCrew_Flatten",
+	"name": "PL_Flatten",
 	"properties": {
 		"activities": [
 			{
 				"name": "TitleCrew_DF",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -23,8 +25,60 @@
 						},
 						"datasetParameters": {
 							"sinkSnowflake": {
-								"tableName": "TITLE_CREW_STG",
-								"schema": "SILVER"
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_CREW_STG",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "TitleBasics_DF",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "TitleCrew_DF",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_TitleBasics_Flatten",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_Id": "\"SP_21\""
+						},
+						"datasetParameters": {
+							"sinkSnfTitleBasics": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_BASICS_STG",
+									"type": "Expression"
+								}
 							}
 						}
 					},
