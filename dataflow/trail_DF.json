@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "snf_silver_001",
+						"referenceName": "snf_silver_002",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"

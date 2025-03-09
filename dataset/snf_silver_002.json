@@ -1,0 +1,24 @@
+{
+	"name": "snf_silver_002",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_snowflake_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"target_table_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "SnowflakeV2Table",
+		"schema": [],
+		"typeProperties": {
+			"schema": "SILVER_002",
+			"table": {
+				"value": "@replace(dataset().target_table_name, '\\\"', '')",
+				"type": "Expression"
+			}
+		}
+	}
+}
