@@ -28,9 +28,16 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     job_id as string (\"SP-21\")",
+				"     job_id as string (\"SP-21\"),",
+				"     columnMappingJSON as string",
 				"}",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          tconst as string,",
+				"          parentTconst as string,",
+				"          seasonNumber as short,",
+				"          episodeNumber as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     inferDriftedColumnTypes: true,",
 				"     limit: 1000,",
@@ -47,7 +54,15 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sinkSilver002"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST = tconst,",
+				"          PARENTTCONST = parentTconst,",
+				"          SEASONNUMBER = seasonNumber,",
+				"          EPISODENUMBER = episodeNumber,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sinkSilver002"
 			]
 		}
 	}

@@ -63,6 +63,9 @@
 								"dataflow": {
 									"referenceName": "trail_DF",
 									"type": "DataFlowReference",
+									"parameters": {
+										"job_id": "\"SP-21\""
+									},
 									"datasetParameters": {
 										"source1": {
 											"fileName": {
@@ -70,7 +73,7 @@
 												"type": "Expression"
 											}
 										},
-										"sink1": {
+										"sinkSilver002": {
 											"target_table_name": {
 												"value": "@replace(item().target_table_name, '\"', '')",
 												"type": "Expression"
@@ -79,7 +82,7 @@
 									}
 								},
 								"compute": {
-									"coreCount": 8,
+									"coreCount": 16,
 									"computeType": "General"
 								},
 								"traceLevel": "Fine"
