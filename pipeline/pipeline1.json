@@ -5,8 +5,6 @@
 			{
 				"name": "principals",
 				"type": "Copy",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.00:30:00",
@@ -149,7 +147,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"fileName": {
-								"value": "Title_Principals_Clean.csv",
+								"value": "TitlePrincipals_Clean.csv",
 								"type": "Expression"
 							}
 						}
