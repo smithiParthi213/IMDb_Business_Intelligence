@@ -29,7 +29,7 @@
 					"name": "RequiredColumns"
 				},
 				{
-					"name": "aggregate1"
+					"name": "RemoveDuplicates"
 				},
 				{
 					"name": "ProfessionIDSK"
@@ -63,8 +63,8 @@
 				"AdditionalColumns aggregate(groupBy(PRIMARYPROFESSION),",
 				"     PROFESSION_NAME = first(PRIMARYPROFESSION),",
 				"          DI_JOB_ID = first(DI_JOB_ID),",
-				"          DI_LOAD_DATE = first(DI_LOAD_DATE)) ~> aggregate1",
-				"aggregate1 keyGenerate(output(ProfessionID_SK as long),",
+				"          DI_LOAD_DATE = first(DI_LOAD_DATE)) ~> RemoveDuplicates",
+				"RemoveDuplicates keyGenerate(output(ProfessionID_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> ProfessionIDSK",
 				"ProfessionIDSK sink(allowSchemaDrift: true,",
