@@ -1,0 +1,128 @@
+{
+	"name": "DF_Personnel_dim",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcNameBasic"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcPrincipals"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcProfession"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AdditionalColumns"
+				},
+				{
+					"name": "RequiredColumns1"
+				},
+				{
+					"name": "RequiredColumns2"
+				},
+				{
+					"name": "joinTable"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"Dale_06\")",
+				"}",
+				"source(output(",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(38,0),",
+				"          DEATHYEAR as decimal(38,0),",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     limit: 100,",
+				"     format: 'table') ~> srcNameBasic",
+				"source(output(",
+				"          TCONST as string,",
+				"          ORDERING as decimal(38,0),",
+				"          NCONST as string,",
+				"          CATEGORY as string,",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcPrincipals",
+				"source(output(",
+				"          PROFESSIONID_SK as decimal(10,0),",
+				"          PROFESSION_NAME as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcProfession",
+				"joinTable derive(DI_LOAD_DATE = currentDate(),",
+				"          DI_JOB_ID = $JOB_ID) ~> AdditionalColumns",
+				"srcNameBasic select(mapColumn(",
+				"          Personnel_ID_SK = NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          KNOWNFORTITLES",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequiredColumns1",
+				"srcPrincipals select(mapColumn(",
+				"          TCONST,",
+				"          NCONST,",
+				"          CHARACTERS",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequiredColumns2",
+				"RequiredColumns1, RequiredColumns2 join(Personnel_ID_SK == NCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinTable",
+				"AdditionalColumns sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true) ~> sink1"
+			]
+		}
+	}
+}
