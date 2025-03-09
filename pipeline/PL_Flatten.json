@@ -5,8 +5,6 @@
 			{
 				"name": "TitleCrew_DF",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -70,7 +68,7 @@
 							"job_Id": "\"SP_21\""
 						},
 						"datasetParameters": {
-							"sinkSnfTitleBasics": {
+							"sink1": {
 								"schema": {
 									"value": "SILVER",
 									"type": "Expression"

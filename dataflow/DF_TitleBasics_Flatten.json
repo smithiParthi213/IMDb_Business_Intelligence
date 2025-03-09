@@ -18,7 +18,7 @@
 						"referenceName": "Snowflake_imdb_db",
 						"type": "DatasetReference"
 					},
-					"name": "sinkSnfTitleBasics"
+					"name": "sink1"
 				}
 			],
 			"transformations": [
@@ -62,7 +62,6 @@
 				"          ENDYEAR = endYear,",
 				"          RUNTIMEMINUTES = runtimeMinutes,",
 				"          GENRES = genres,",
-				"          yearStatus_Flag,",
 				"          DI_JOB_ID,",
 				"          DI_LOAD_DT",
 				"     ),",
@@ -77,7 +76,20 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sinkSnfTitleBasics"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          ISADULT,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          RUNTIMEMINUTES,",
+				"          GENRES,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sink1"
 			]
 		}
 	}
