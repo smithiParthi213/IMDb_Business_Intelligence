@@ -1,5 +1,5 @@
 {
-	"name": "pipeline2",
+	"name": "sample_For_each_Act",
 	"properties": {
 		"activities": [
 			{
@@ -62,22 +62,6 @@
 							"typeProperties": {
 								"source": {
 									"type": "DelimitedTextSource",
-									"additionalColumns": [
-										{
-											"name": "DI_JOB_ID",
-											"value": {
-												"value": "@pipeline().RunId",
-												"type": "Expression"
-											}
-										},
-										{
-											"name": "DI_LOAD_DT",
-											"value": {
-												"value": "@utcNow()",
-												"type": "Expression"
-											}
-										}
-									],
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
@@ -103,11 +87,11 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "Bronze_ADLS_003",
+									"referenceName": "DelimitedText_Akas",
 									"type": "DatasetReference",
 									"parameters": {
 										"fileName": {
-											"value": "@item().source_table",
+											"value": "@item()",
 											"type": "Expression"
 										}
 									}

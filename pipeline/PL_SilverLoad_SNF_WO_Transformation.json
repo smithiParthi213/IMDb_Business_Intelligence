@@ -469,7 +469,7 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "SNF_ratings",
+						"referenceName": "Ratings_SNF",
 						"type": "DatasetReference"
 					}
 				]

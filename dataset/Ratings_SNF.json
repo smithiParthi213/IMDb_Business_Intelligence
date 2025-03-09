@@ -1,5 +1,5 @@
 {
-	"name": "SNF_ratings",
+	"name": "Ratings_SNF",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_snowflake_imdb",
