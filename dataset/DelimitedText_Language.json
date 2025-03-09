@@ -1,0 +1,28 @@
+{
+	"name": "DelimitedText_Language",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "TitleLanguage_Clean.csv",
+				"fileSystem": "silver"
+			},
+			"columnDelimiter": "\t",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "ISO Language Names\tLanguage_Abbr\tEndonym(s)",
+				"type": "String"
+			}
+		]
+	}
+}
