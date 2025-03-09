@@ -1,0 +1,41 @@
+{
+	"name": "PL_TitleCrew_Flatten",
+	"properties": {
+		"activities": [
+			{
+				"name": "TitleCrew_DF",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_TitleCrew_Flatten",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"sinkSnowflake": {
+								"tableName": "TITLE_CREW_STG",
+								"schema": "SILVER"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
