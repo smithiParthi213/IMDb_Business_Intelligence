@@ -36,11 +36,6 @@
 				}
 			}
 		],
-		"parameters": {
-			"job_id": {
-				"type": "string"
-			}
-		},
 		"annotations": []
 	}
 }
