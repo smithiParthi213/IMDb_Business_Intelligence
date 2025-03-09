@@ -9,7 +9,7 @@
 						"referenceName": "DelimitedText_NameBasics",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "sourceNameBasics"
 				}
 			],
 			"sinks": [
@@ -23,10 +23,10 @@
 			],
 			"transformations": [
 				{
-					"name": "derivedColumn1"
+					"name": "AddingDIColumns"
 				},
 				{
-					"name": "flatten1"
+					"name": "flattenPrimaryProfession"
 				}
 			],
 			"scriptLines": [
@@ -44,11 +44,11 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 derive(DI_LOAD_DATE = currentDate(),",
+				"     ignoreNoFilesFound: false) ~> sourceNameBasics",
+				"sourceNameBasics derive(DI_LOAD_DATE = currentDate(),",
 				"          DI_JOB_ID = $JOB_ID,",
-				"          primaryProfession = split(primaryProfession, ',')) ~> derivedColumn1",
-				"derivedColumn1 foldDown(unroll(primaryProfession),",
+				"          primaryProfession = split(primaryProfession, ',')) ~> AddingDIColumns",
+				"AddingDIColumns foldDown(unroll(primaryProfession),",
 				"     mapColumn(",
 				"          NCONST = nconst,",
 				"          PRIMARYNAME = primaryName,",
@@ -60,8 +60,8 @@
 				"          DI_JOB_ID",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
-				"     skipDuplicateMapOutputs: false) ~> flatten1",
-				"flatten1 sink(allowSchemaDrift: true,",
+				"     skipDuplicateMapOutputs: false) ~> flattenPrimaryProfession",
+				"flattenPrimaryProfession sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
