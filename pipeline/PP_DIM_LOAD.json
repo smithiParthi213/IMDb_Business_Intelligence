@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "PP_DIM_LOAD",
 	"properties": {
 		"activities": [
 			{
