@@ -1,0 +1,147 @@
+{
+	"name": "DF_TitleBasics_dim_copy1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTitleBasicsSTG"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TBdimMaxID"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceGenreDim"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkTBdimGold"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joindimMaxID"
+				},
+				{
+					"name": "surrogateKey"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "joinGenreDim"
+				},
+				{
+					"name": "selectGenereID"
+				},
+				{
+					"name": "addDiCols"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"SP-21\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as integer,",
+				"          STARTYEAR as integer,",
+				"          ENDYEAR as integer,",
+				"          RUNTIMEMINUTES as integer,",
+				"          GENRES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceTitleBasicsSTG",
+				"source(output(",
+				"          MAXTBDIMSK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(TITLEBASICS_ID_SK),0) as MaxTBdimSK from GOLD.DIM_TITLE_BASICS',",
+				"     format: 'query') ~> TBdimMaxID",
+				"source(output(",
+				"          GENREID_SK as integer,",
+				"          GENRE_NAME as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceGenreDim",
+				"SourceTitleBasicsSTG, TBdimMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joindimMaxID",
+				"joindimMaxID keyGenerate(output(mySK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey",
+				"surrogateKey derive(mySK = mySK + MAXTBDIMSK) ~> derivedColumn1",
+				"derivedColumn1, sourceGenreDim join(SourceTitleBasicsSTG@GENRES == GENRE_NAME,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinGenreDim",
+				"joinGenreDim select(mapColumn(",
+				"          mySK,",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          GENREID_SK,",
+				"          STARTYEAR,",
+				"          ENDYEAR",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectGenereID",
+				"selectGenereID derive(job_id = $job_id,",
+				"          Load_dt = currentDate()) ~> addDiCols",
+				"addDiCols sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLEBASICS_ID_SK = mySK,",
+				"          TITLEBASICS_TCONST = TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          GENREID_SK,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          DI_JOB_ID = job_id,",
+				"          DI_LOAD_DT = Load_dt",
+				"     )) ~> sinkTBdimGold"
+			]
+		}
+	}
+}
