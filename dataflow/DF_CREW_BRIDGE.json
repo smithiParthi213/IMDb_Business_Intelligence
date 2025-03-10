@@ -32,7 +32,7 @@
 					"name": "SourecDataWithSK"
 				},
 				{
-					"name": "aggregateKeys"
+					"name": "joinToTitleBasics"
 				}
 			],
 			"scriptLines": [
@@ -70,9 +70,11 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> SourecDataWithSK",
-				"SourecDataWithSK aggregate(groupBy(DIRECTORS,",
-				"          WRITERS),",
-				"     COUNT_ROW = count(TCONST)) ~> aggregateKeys"
+				"SourecDataWithSK, srcTitleBasic join(TCONST == TITLEBASICS_TCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinToTitleBasics"
 			]
 		}
 	}
