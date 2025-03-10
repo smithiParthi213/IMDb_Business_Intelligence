@@ -1,5 +1,5 @@
 {
-	"name": "DF_TITLE_AKAS_DIM",
+	"name": "DF_TITLE_AKAS_DIM_dummy",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
