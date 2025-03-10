@@ -46,8 +46,6 @@
 			{
 				"name": "TitleBasics_DF",
 				"type": "ExecuteDataFlow",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "TitleCrew_DF",
@@ -94,6 +92,8 @@
 			{
 				"name": "NameBasics_DF",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "TitleBasics_DF",
