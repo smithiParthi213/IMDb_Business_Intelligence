@@ -1,0 +1,79 @@
+{
+	"name": "DF_CREW_BRIDGE",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcTitleBasic"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcCrew"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "MaxCrewID"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "SourecDataWithSK"
+				},
+				{
+					"name": "aggregateKeys"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcTitleBasic",
+				"source(output(",
+				"          TCONST as string,",
+				"          DIRECTORS as string,",
+				"          WRITERS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcCrew",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'SELECT NVL(MAX(CREW_ID_SK),0) as MaxCREW_ID_SK from GOLD.BRIDGE_CREW',",
+				"     format: 'query') ~> MaxCrewID",
+				"srcCrew, MaxCrewID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SourecDataWithSK",
+				"SourecDataWithSK aggregate(groupBy(DIRECTORS,",
+				"          WRITERS),",
+				"     COUNT_ROW = count(TCONST)) ~> aggregateKeys"
+			]
+		}
+	}
+}
