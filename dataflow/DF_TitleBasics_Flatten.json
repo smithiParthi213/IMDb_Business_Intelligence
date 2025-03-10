@@ -27,6 +27,9 @@
 				},
 				{
 					"name": "FlattenGenre"
+				},
+				{
+					"name": "SelectReqCols"
 				}
 			],
 			"scriptLines": [
@@ -48,7 +51,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> SourceTitleBasicsTable",
-				"SourceTitleBasicsTable derive(genres = split(genres, ','),",
+				"SelectReqCols derive(genres = split(genres, ','),",
 				"          DI_JOB_ID = $job_Id,",
 				"          DI_LOAD_DT = currentDate()) ~> AddidingDIColumns",
 				"AddidingDIColumns foldDown(unroll(genres),",
@@ -67,12 +70,26 @@
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> FlattenGenre",
+				"SourceTitleBasicsTable select(mapColumn(",
+				"          tconst,",
+				"          titleType,",
+				"          primaryTitle,",
+				"          originalTitle,",
+				"          isAdult,",
+				"          startYear,",
+				"          endYear,",
+				"          runtimeMinutes,",
+				"          genres",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> SelectReqCols",
 				"FlattenGenre sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
