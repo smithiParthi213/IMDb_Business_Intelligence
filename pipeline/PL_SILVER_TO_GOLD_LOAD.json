@@ -148,6 +148,8 @@
 			{
 				"name": "DM_TITLE_BASICS_Load",
 				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "DIM_GENRE_Load",
