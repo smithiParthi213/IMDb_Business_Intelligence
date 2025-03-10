@@ -155,8 +155,12 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "Principals_SNF",
-						"type": "DatasetReference"
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": "SILVER",
+							"tableName": "TITLE_PRINCIPALS_STG"
+						}
 					}
 				]
 			},
@@ -337,8 +341,12 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "Akas_SNF",
-						"type": "DatasetReference"
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": "SILVER",
+							"tableName": "TITLE_AKAS_STG"
+						}
 					}
 				]
 			},
@@ -469,8 +477,12 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "Ratings_SNF",
-						"type": "DatasetReference"
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": "SILVER",
+							"tableName": "TITLE_RATINGS_STG"
+						}
 					}
 				]
 			},
@@ -611,8 +623,12 @@
 				],
 				"outputs": [
 					{
-						"referenceName": "Episodes_SNF",
-						"type": "DatasetReference"
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema": "SILVER",
+							"tableName": "TITLE_EPISODES_STG"
+						}
 					}
 				]
 			}

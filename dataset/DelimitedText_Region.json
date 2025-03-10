@@ -1,0 +1,28 @@
+{
+	"name": "DelimitedText_Region",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls_imdb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "TitleRegion_Clean.csv",
+				"fileSystem": "silver"
+			},
+			"columnDelimiter": "\t",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "country_code\tcountry_name",
+				"type": "String"
+			}
+		]
+	}
+}
