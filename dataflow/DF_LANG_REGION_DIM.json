@@ -22,14 +22,14 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "Lanaguage_SNF",
+						"referenceName": "Snowflake_imdb_db",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
 				},
 				{
 					"dataset": {
-						"referenceName": "Region_SNF",
+						"referenceName": "Snowflake_imdb_db",
 						"type": "DatasetReference"
 					},
 					"name": "sink2"
@@ -66,7 +66,6 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     limit: 300,",
 				"     ignoreNoFilesFound: false) ~> LanguageSource",
 				"source(output(",
 				"          country_code as string,",
@@ -74,7 +73,6 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     limit: 300,",
 				"     ignoreNoFilesFound: false) ~> RegionSource",
 				"LanguageSource keyGenerate(output(LanguageID_SK as long),",
 				"     startAt: 1L,",
@@ -107,18 +105,11 @@
 				"     skipDuplicateMapOutputs: true) ~> select2",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          LANGUAGEID_SK as decimal(38,0),",
-				"          ISO_LANGUAGE_NAMES as string,",
-				"          LANGUAGE_ABBR as string,",
-				"          ENDONYMS as string,",
-				"          DI_JOB_ID as string,",
-				"          DI_LOAD_DT as date",
-				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
@@ -133,17 +124,11 @@
 				"     )) ~> sink1",
 				"select2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          COUNTRYID_SK as decimal(38,0),",
-				"          COUNTRY_CODE as string,",
-				"          COUNTRY_NAME as string,",
-				"          DI_JOB_ID as string,",
-				"          DI_LOAD_DT as date",
-				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
