@@ -1,0 +1,92 @@
+{
+	"name": "DF_Genere_dim",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTitleBasics"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinktoGold"
+				}
+			],
+			"transformations": [
+				{
+					"name": "requiredColumns"
+				},
+				{
+					"name": "AddDIcolumns"
+				},
+				{
+					"name": "RemoveDuplicates"
+				},
+				{
+					"name": "surrogateKey1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"SP-21\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTIMEMINUTES as decimal(38,0),",
+				"          GENRES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceTitleBasics",
+				"SourceTitleBasics select(mapColumn(",
+				"          GENRES",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> requiredColumns",
+				"requiredColumns derive(DI_JOB_ID = $job_id,",
+				"          DI_LOAD_DT = currentDate()) ~> AddDIcolumns",
+				"AddDIcolumns aggregate(groupBy(GENRES),",
+				"     GENRES_name = first(GENRES),",
+				"          DI_JOB_ID = first(DI_JOB_ID),",
+				"          DI_LOAD_DT = first(DI_LOAD_DT)) ~> RemoveDuplicates",
+				"RemoveDuplicates keyGenerate(output(Genre_SK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          GENREID_SK = Genre_SK,",
+				"          GENRE_NAME = GENRES_name,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sinktoGold"
+			]
+		}
+	}
+}
