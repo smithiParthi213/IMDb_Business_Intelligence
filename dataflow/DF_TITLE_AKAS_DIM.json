@@ -38,6 +38,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "srcLanguage"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcTitleBasic"
 				}
 			],
 			"sinks": [
@@ -88,6 +95,9 @@
 				},
 				{
 					"name": "RequiredColums"
+				},
+				{
+					"name": "joinToTitleBasic"
 				}
 			],
 			"scriptLines": [
@@ -158,6 +168,21 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> srcLanguage",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcTitleBasic",
 				"srcTitleAkas, TitleAkasMaxID join(1==1,",
 				"     joinType:'cross',",
 				"     matchType:'exact',",
@@ -226,8 +251,6 @@
 				"          TITLEID,",
 				"          ORDERING,",
 				"          TITLE,",
-				"          REGION,",
-				"          LANGUAGE,",
 				"          TYPES,",
 				"          ATTRIBUTES,",
 				"          ISORIGINALTITLE,",
@@ -243,16 +266,7 @@
 				"          DI_LOAD_DT = derivedColumn2@DI_LOAD_DT,",
 				"          Row_Action,",
 				"          REGIONID_SK,",
-				"          REGION_CODE,",
-				"          REGION_NAME,",
-				"          DI_JOB_ID = srcRegion@DI_JOB_ID,",
-				"          DI_LOAD_DT = srcRegion@DI_LOAD_DT,",
-				"          LANGUAGEID_SK,",
-				"          ISO_LANGUAGE_NAMES,",
-				"          LANGUAGE_ABBR,",
-				"          ENDONYMS,",
-				"          DI_JOB_ID = srcLanguage@DI_JOB_ID,",
-				"          DI_LOAD_DT = srcLanguage@DI_LOAD_DT",
+				"          LANGUAGEID_SK",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RequiredColumns",
@@ -260,7 +274,7 @@
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
 				"surrogateKey1 derive(AKAS_ID_SK = MAXAKASSK + RowNum) ~> derivedColumn3",
-				"derivedColumn3 select(mapColumn(",
+				"joinToTitleBasic select(mapColumn(",
 				"          TITLEID,",
 				"          ORDERING,",
 				"          TITLE,",
@@ -268,18 +282,23 @@
 				"          ATTRIBUTES,",
 				"          ISORIGINALTITLE,",
 				"          AKAS_ID_SK,",
-				"          TITLEBASICS_ID_SK,",
+				"          TITLEBASICS_ID_SK = RequiredColumns@TITLEBASICS_ID_SK,",
 				"          AKAK_ID_DK,",
 				"          EFFECTIVE_START_DATE,",
 				"          EFFECTIVE_END_DATE,",
 				"          IS_ACTIVE,",
-				"          DI_JOB_ID,",
-				"          DI_LOAD_DT,",
+				"          DI_JOB_ID = RequiredColumns@DI_JOB_ID,",
+				"          DI_LOAD_DT = RequiredColumns@DI_LOAD_DT,",
 				"          REGIONID_SK,",
 				"          LANGUAGEID_SK",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RequiredColums",
+				"derivedColumn3, srcTitleBasic join(TITLEID == TITLEBASICS_TCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinToTitleBasic",
 				"RequiredColums sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
