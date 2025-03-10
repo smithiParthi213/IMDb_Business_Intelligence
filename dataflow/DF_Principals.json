@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "DF_Principals",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -10,6 +10,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "MAXIDprincipals"
 				}
 			],
 			"sinks": [
@@ -27,6 +34,9 @@
 				},
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "join1"
 				}
 			],
 			"scriptLines": [
@@ -35,7 +45,7 @@
 				"}",
 				"source(output(",
 				"          TCONST as string,",
-				"          ORDERING as decimal(38,0),",
+				"          ORDERING as integer,",
 				"          NCONST as string,",
 				"          CATEGORY as string,",
 				"          JOB as string,",
@@ -46,11 +56,24 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> source1",
-				"source1 keyGenerate(output(TITLEPRINCIPALS_SK as long),",
+				"source(output(",
+				"          MAXSK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'SELECT COALESCE(MAX(TITLEPRINCIPALS_SK), 0) as MaxSK \\nFROM IMDB_DB.GOLD.DIM_TITLE_PRINCIPALS\\n',",
+				"     format: 'query') ~> MAXIDprincipals",
+				"join1 keyGenerate(output(TITLEPRINCIPALS_SK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
 				"surrogateKey1 derive(DI_LOAD_DATE = toString(currentDate(), 'yyyy-MM-dd'),",
-				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn1",
+				"          DI_JOB_ID = $JOB_ID,",
+				"          TITLEPRINCIPALS_SK = MAXSK + TITLEPRINCIPALS_SK) ~> derivedColumn1",
+				"source1, MAXIDprincipals join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
