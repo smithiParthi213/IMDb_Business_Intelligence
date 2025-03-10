@@ -1,0 +1,45 @@
+{
+	"name": "PL_SILVER_TO_GOLD_LOAD",
+	"properties": {
+		"activities": [
+			{
+				"name": "DIM_PROFESSION_Load",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Profession_dim",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"srcNameBasic": {
+								"schema": "SILVER",
+								"tableName": "NAME_BASICS_STG"
+							},
+							"sinkProfession": {
+								"schema": "GOLD",
+								"tableName": "DIM_PROFESSION"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
