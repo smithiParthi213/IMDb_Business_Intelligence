@@ -165,55 +165,6 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"dataflow": {
-						"referenceName": "DF_TitleBasics_dim",
-						"type": "DataFlowReference",
-						"parameters": {
-							"job_id": "\"SP-21\""
-						},
-						"datasetParameters": {
-							"SourceTitleBasicsSTG": {
-								"schema": {
-									"value": "SILVER",
-									"type": "Expression"
-								},
-								"tableName": {
-									"value": "TITLE_BASICS_STG",
-									"type": "Expression"
-								}
-							},
-							"TBdimMaxID": {
-								"schema": {
-									"value": "GOLD",
-									"type": "Expression"
-								},
-								"tableName": {
-									"value": "DIM_TITLE_BASICS",
-									"type": "Expression"
-								}
-							},
-							"sourceGenreDim": {
-								"schema": {
-									"value": "GOLD",
-									"type": "Expression"
-								},
-								"tableName": {
-									"value": "DIM_GENRE",
-									"type": "Expression"
-								}
-							},
-							"sinkTBdimGold": {
-								"schema": {
-									"value": "GOLD",
-									"type": "Expression"
-								},
-								"tableName": {
-									"value": "DIM_TITLE_BASICS",
-									"type": "Expression"
-								}
-							}
-						}
-					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"

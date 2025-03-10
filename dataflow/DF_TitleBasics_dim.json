@@ -1,0 +1,177 @@
+{
+	"name": "DF_TitleBasics_dim",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTitleBasicsSTG"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TBdimMaxID"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceGenreDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTBdim"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "joindimMaxID"
+				},
+				{
+					"name": "joinGenreDim"
+				},
+				{
+					"name": "selectGenereID"
+				},
+				{
+					"name": "addDiCols"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "splitInsertUpdate"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"SP-21\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as integer,",
+				"          STARTYEAR as integer,",
+				"          ENDYEAR as integer,",
+				"          RUNTIMEMINUTES as integer,",
+				"          GENRES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceTitleBasicsSTG",
+				"source(output(",
+				"          MAXTBDIMSK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(TITLEBASICS_ID_SK),0) as MaxTBdimSK from GOLD.DIM_TITLE_BASICS',",
+				"     format: 'query') ~> TBdimMaxID",
+				"source(output(",
+				"          GENREID_SK as integer,",
+				"          GENRE_NAME as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceGenreDim",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceTBdim",
+				"SourceTitleBasicsSTG, TBdimMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joindimMaxID",
+				"joindimMaxID, sourceGenreDim join(GENRES == GENRE_NAME,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinGenreDim",
+				"joinGenreDim select(mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          GENREID_SK,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          MAXTBDIMSK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectGenereID",
+				"selectGenereID derive(job_id = $job_id,",
+				"          Load_dt = currentDate()) ~> addDiCols",
+				"addDiCols, SourceTBdim join(TCONST == TITLEBASICS_TCONST",
+				"     && selectGenereID@GENREID_SK == SourceTBdim@GENREID_SK,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"select1, SourceTBdim lookup(TCONST == SourceTBdim@TITLEBASICS_TCONST",
+				"     && select1@GENREID_SK == SourceTBdim@GENREID_SK,",
+				"     multiple: true,",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 split(ERROR_FUNCTION(''),",
+				"     disjoint: false) ~> splitInsertUpdate@(newRecords, update)",
+				"join1 select(mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE = selectGenereID@TITLETYPE,",
+				"          PRIMARYTITLE = selectGenereID@PRIMARYTITLE,",
+				"          ORIGINALTITLE = selectGenereID@ORIGINALTITLE,",
+				"          GENREID_SK = selectGenereID@GENREID_SK,",
+				"          STARTYEAR = selectGenereID@STARTYEAR,",
+				"          ENDYEAR = selectGenereID@ENDYEAR,",
+				"          MAXTBDIMSK,",
+				"          job_id,",
+				"          Load_dt,",
+				"          TITLEBASICS_ID_SK,",
+				"          TITLEBASICS_TCONST,",
+				"          TITLETYPE = SourceTBdim@TITLETYPE,",
+				"          PRIMARYTITLE = SourceTBdim@PRIMARYTITLE,",
+				"          ORIGINALTITLE = SourceTBdim@ORIGINALTITLE,",
+				"          GENREID_SK = SourceTBdim@GENREID_SK,",
+				"          STARTYEAR = SourceTBdim@STARTYEAR,",
+				"          ENDYEAR = SourceTBdim@ENDYEAR,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1"
+			]
+		}
+	}
+}

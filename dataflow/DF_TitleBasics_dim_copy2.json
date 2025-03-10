@@ -1,0 +1,221 @@
+{
+	"name": "DF_TitleBasics_dim_copy2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTitleBasicsSTG"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TBdimMaxID"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceGenreDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "SourceTBdim"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkTBdimGold"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joindimMaxID"
+				},
+				{
+					"name": "joinGenreDim"
+				},
+				{
+					"name": "selectGenereID"
+				},
+				{
+					"name": "addDiCols"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "derivedColumnRowAction"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "addMySK"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "selectReqColsGold"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"SP-21\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as integer,",
+				"          STARTYEAR as integer,",
+				"          ENDYEAR as integer,",
+				"          RUNTIMEMINUTES as integer,",
+				"          GENRES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceTitleBasicsSTG",
+				"source(output(",
+				"          MAXTBDIMSK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(TITLEBASICS_ID_SK),0) as MaxTBdimSK from GOLD.DIM_TITLE_BASICS',",
+				"     format: 'query') ~> TBdimMaxID",
+				"source(output(",
+				"          GENREID_SK as integer,",
+				"          GENRE_NAME as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceGenreDim",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> SourceTBdim",
+				"SourceTitleBasicsSTG, TBdimMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joindimMaxID",
+				"joindimMaxID, sourceGenreDim join(GENRES == GENRE_NAME,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinGenreDim",
+				"joinGenreDim select(mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          GENREID_SK,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          MAXTBDIMSK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectGenereID",
+				"selectGenereID derive(job_id = $job_id,",
+				"          Load_dt = currentDate()) ~> addDiCols",
+				"addDiCols, SourceTBdim join(TCONST == TITLEBASICS_TCONST",
+				"     && selectGenereID@GENREID_SK == SourceTBdim@GENREID_SK,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 filter(isNull(TITLEBASICS_TCONST)&&isNull(SourceTBdim@GENREID_SK)&&isNull(SourceTBdim@PRIMARYTITLE)&&isNull(SourceTBdim@ORIGINALTITLE)) ~> filter1",
+				"filter1 derive(RowAction = iif(isNull(TITLEBASICS_TCONST)&&isNull(SourceTBdim@PRIMARYTITLE)&&isNull(SourceTBdim@ORIGINALTITLE)&&isNull(SourceTBdim@GENREID_SK), 'insert', 'update')) ~> derivedColumnRowAction",
+				"select1 keyGenerate(output(mysk as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(mysk = mysk + MAXTBDIMSK) ~> addMySK",
+				"derivedColumnRowAction select(mapColumn(",
+				"          TCONST,",
+				"          TITLETYPE = selectGenereID@TITLETYPE,",
+				"          PRIMARYTITLE = selectGenereID@PRIMARYTITLE,",
+				"          ORIGINALTITLE = selectGenereID@ORIGINALTITLE,",
+				"          GENREID_SK = selectGenereID@GENREID_SK,",
+				"          STARTYEAR = selectGenereID@STARTYEAR,",
+				"          ENDYEAR = selectGenereID@ENDYEAR,",
+				"          MAXTBDIMSK,",
+				"          job_id,",
+				"          Load_dt,",
+				"          RowAction",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"addMySK select(mapColumn(",
+				"          TITLEBASICS_ID_SK = mysk,",
+				"          TITLEBASICS_TCONST = TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          GENREID_SK,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          job_id,",
+				"          Load_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectReqColsGold",
+				"selectReqColsGold sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLEBASICS_ID_SK,",
+				"          TITLEBASICS_TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          GENREID_SK,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          job_id,",
+				"          Load_dt",
+				"     )) ~> sinkTBdimGold"
+			]
+		}
+	}
+}
