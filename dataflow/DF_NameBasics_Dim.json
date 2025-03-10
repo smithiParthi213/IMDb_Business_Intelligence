@@ -33,7 +33,15 @@
 					"name": "sourceNBdim"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkNBdim"
+				}
+			],
 			"transformations": [
 				{
 					"name": "join1"
@@ -61,9 +69,15 @@
 				},
 				{
 					"name": "join4"
+				},
+				{
+					"name": "selectSinkCols"
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"SP-21\")",
+				"}",
 				"source(output(",
 				"          NCONST as string,",
 				"          PRIMARYNAME as string,",
@@ -77,7 +91,10 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceNameBasicsSTG",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          MAXNB_SK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     query: 'select NVL(MAX(NAMEBASICS_SK),0) as MaxNB_SK from GOLD.DIM_NAME_BASICS',",
 				"     format: 'query') ~> NBdimMaxID",
@@ -129,7 +146,13 @@
 				"join4 keyGenerate(output(mySK as long),",
 				"     startAt: 1L,",
 				"     stepValue: 1L) ~> surrogateKey1",
-				"surrogateKey1 derive(NAMEBASICS_SK = ERROR_FUNCTION('')) ~> derivedColumn2",
+				"surrogateKey1 derive(NAMEBASICS_SK = mySK +MAXNB_SK,",
+				"          NAMEBASICS_DK = iif(RowAction == 'insert', abs(toInteger(crc32(concat(PRIMARYNAME,NCONST)))), toInteger(NAMEBASICS_DK)),",
+				"          EFFECTIVE_START_DATE = currentDate(),",
+				"          EFFECTIVE_END_DATE = iif(RowAction == 'update', currentDate(), toDate('9999-12-31')),",
+				"          DI_job_id = $job_id,",
+				"          DI_Load_DT = currentDate(),",
+				"          IS_ACTIVE = iif(RowAction == 'update', '0', '1')) ~> derivedColumn2",
 				"derivedColumn1 select(mapColumn(",
 				"          NAMEBASICS_SK,",
 				"          NAMEBASICS_DK,",
@@ -151,7 +174,49 @@
 				"     joinType:'cross',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join4"
+				"     broadcast: 'auto')~> join4",
+				"derivedColumn2 select(mapColumn(",
+				"          NAMEBASICS_SK,",
+				"          NAMEBASICS_DK,",
+				"          NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          PROFESSIONID_SK,",
+				"          KNOWNFORTITLES,",
+				"          EFFECTIVE_START_DATE,",
+				"          EFFECTIVE_END_DATE,",
+				"          IS_ACTIVE,",
+				"          DI_job_id,",
+				"          DI_Load_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSinkCols",
+				"selectSinkCols sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          NAMEBASICS_SK,",
+				"          NAMEBASICS_DK,",
+				"          NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          PROFESSIONID_SK,",
+				"          KNOWNFORTITLES,",
+				"          EFFECTIVE_START_DATE,",
+				"          EFFECTIVE_END_DATE,",
+				"          IS_ACTIVE,",
+				"          DI_JOB_ID = DI_job_id,",
+				"          DI_LOAD_DT = DI_Load_DT",
+				"     )) ~> sinkNBdim"
 			]
 		}
 	}
