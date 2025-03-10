@@ -40,12 +40,6 @@
 					"name": "joindimMaxID"
 				},
 				{
-					"name": "surrogateKey"
-				},
-				{
-					"name": "derivedColumn1"
-				},
-				{
 					"name": "joinGenreDim"
 				},
 				{
@@ -96,11 +90,7 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joindimMaxID",
-				"joindimMaxID keyGenerate(output(mySK as long),",
-				"     startAt: 1L,",
-				"     stepValue: 1L) ~> surrogateKey",
-				"surrogateKey derive(mySK = mySK + MAXTBDIMSK) ~> derivedColumn1",
-				"derivedColumn1, sourceGenreDim join(GENRES == GENRE_NAME,",
+				"joindimMaxID, sourceGenreDim join(GENRES == GENRE_NAME,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
