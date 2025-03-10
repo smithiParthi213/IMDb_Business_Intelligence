@@ -1,0 +1,57 @@
+{
+	"name": "PL_Load_TitleAkas_DIm",
+	"properties": {
+		"activities": [
+			{
+				"name": "DIM_TITLE_AKAS_Load",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_TITLE_AKAS_DIM",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"Dale_06\""
+						},
+						"datasetParameters": {
+							"srcTitleAkas": {
+								"schema": "SILVER",
+								"tableName": "TITLE_AKAS_STG"
+							},
+							"srcRegion": {
+								"schema": "GOLD",
+								"tableName": "DIM_REGION"
+							},
+							"srcLanguage": {
+								"schema": "GOLD",
+								"tableName": "DIM_LANGUAGE"
+							},
+							"srcTitleBasic": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_BASICS"
+							},
+							"sinkTitleAkas": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_AKAS"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
