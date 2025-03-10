@@ -128,7 +128,19 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sinkTBdimGold"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLEBASICS_ID_SK = mySK,",
+				"          TITLEBASICS_TCONST = TCONST,",
+				"          TITLETYPE,",
+				"          PRIMARYTITLE,",
+				"          ORIGINALTITLE,",
+				"          GENREID_SK,",
+				"          STARTYEAR,",
+				"          ENDYEAR,",
+				"          DI_JOB_ID = job_id,",
+				"          DI_LOAD_DT = Load_dt",
+				"     )) ~> sinkTBdimGold"
 			]
 		}
 	}
