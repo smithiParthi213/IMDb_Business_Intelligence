@@ -31,6 +31,20 @@
 						"type": "DatasetReference"
 					},
 					"name": "srcTitleBasic"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcMaxAkasID"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TitleAkasDim"
 				}
 			],
 			"sinks": [
@@ -44,7 +58,7 @@
 			],
 			"transformations": [
 				{
-					"name": "derivedColumn2"
+					"name": "AdditionColumns"
 				},
 				{
 					"name": "joinToRegion"
@@ -60,6 +74,18 @@
 				},
 				{
 					"name": "joinToTitleBasic"
+				},
+				{
+					"name": "SourceDataWIthSK"
+				},
+				{
+					"name": "aggregateAkasKeys"
+				},
+				{
+					"name": "joinToTarget"
+				},
+				{
+					"name": "filterExistingRows"
 				}
 			],
 			"scriptLines": [
@@ -117,9 +143,33 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> srcTitleBasic",
-				"srcTitleAkas derive(DI_JOB_ID = $job_id,",
-				"          DI_LOAD_DT = currentDate()) ~> derivedColumn2",
-				"derivedColumn2, srcRegion join(REGION == upper(REGION_CODE),",
+				"source(output(",
+				"          MAXAKASSK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'SELECT NVL(MAX(AKAS_ID_SK),0) as MaxAKASSK from GOLD.DIM_TITLE_AKAS',",
+				"     format: 'query') ~> srcMaxAkasID",
+				"source(output(",
+				"          AKAS_ID_SK as decimal(38,0),",
+				"          LANGUAGEID_SK as decimal(38,0),",
+				"          REGIONID_SK as decimal(38,0),",
+				"          TITLEBASICS_ID_SK as string,",
+				"          AKAS_TITLEID as string,",
+				"          ORDERING as decimal(5,0),",
+				"          TITLE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as decimal(1,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleAkasDim",
+				"filterExistingRows derive(DI_JOB_ID = $job_id,",
+				"          DI_LOAD_DT = currentDate()) ~> AdditionColumns",
+				"AdditionColumns, srcRegion join(REGION == upper(REGION_CODE),",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
@@ -131,16 +181,16 @@
 				"     broadcast: 'auto')~> joinToLanguage",
 				"joinToTitleBasic select(mapColumn(",
 				"          AKAS_TITLEID = TITLEID,",
-				"          ORDERING,",
-				"          TITLE,",
-				"          TYPES,",
-				"          ATTRIBUTES,",
-				"          ISORIGINALTITLE,",
-				"          DI_JOB_ID = derivedColumn2@DI_JOB_ID,",
-				"          DI_LOAD_DT = derivedColumn2@DI_LOAD_DT,",
-				"          REGIONID_SK,",
-				"          LANGUAGEID_SK,",
-				"          TITLEBASICS_ID_SK",
+				"          ORDERING = aggregateAkasKeys@ORDERING,",
+				"          TITLE = aggregateAkasKeys@TITLE,",
+				"          TYPES = aggregateAkasKeys@TYPES,",
+				"          ATTRIBUTES = aggregateAkasKeys@ATTRIBUTES,",
+				"          ISORIGINALTITLE = aggregateAkasKeys@ISORIGINALTITLE,",
+				"          DI_JOB_ID = AdditionColumns@DI_JOB_ID,",
+				"          DI_LOAD_DT = AdditionColumns@DI_LOAD_DT,",
+				"          REGIONID_SK = srcRegion@REGIONID_SK,",
+				"          LANGUAGEID_SK = srcLanguage@LANGUAGEID_SK,",
+				"          TITLEBASICS_ID_SK = srcTitleBasic@TITLEBASICS_ID_SK",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> RequiredColumns",
@@ -152,6 +202,28 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinToTitleBasic",
+				"srcTitleAkas, srcMaxAkasID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SourceDataWIthSK",
+				"SourceDataWIthSK aggregate(groupBy(TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          REGION,",
+				"          LANGUAGE,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          MAXAKASSK),",
+				"     CountRow = countDistinct((TITLEID) + '-' + toString(ORDERING))) ~> aggregateAkasKeys",
+				"aggregateAkasKeys, TitleAkasDim join(TITLEID == AKAS_TITLEID",
+				"     && aggregateAkasKeys@ORDERING == TitleAkasDim@ORDERING,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinToTarget",
+				"joinToTarget filter(isNull(AKAS_TITLEID)&&isNull(TitleAkasDim@ORDERING)) ~> filterExistingRows",
 				"surrogateKey1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
