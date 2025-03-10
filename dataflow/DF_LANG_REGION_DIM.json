@@ -134,11 +134,11 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
 				"     mapColumn(",
-				"          COUNTRYID_SK = REGIONID_SK,",
-				"          COUNTRY_CODE = REGION_CODE,",
-				"          COUNTRY_NAME = REGION_NAME,",
-				"          DI_JOB_ID,",
-				"          DI_LOAD_DT = DI_LOAD_DATE",
+				"          REGION_CODE,",
+				"          REGION_NAME,",
+				"          REGIONID_SK,",
+				"          DI_LOAD_DATE,",
+				"          DI_JOB_ID",
 				"     )) ~> sink2"
 			]
 		}
