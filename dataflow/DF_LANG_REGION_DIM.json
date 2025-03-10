@@ -137,7 +137,7 @@
 				"          REGION_CODE,",
 				"          REGION_NAME,",
 				"          REGIONID_SK,",
-				"          DI_LOAD_DATE,",
+				"          DI_LOAD_DT = DI_LOAD_DATE,",
 				"          DI_JOB_ID",
 				"     )) ~> sink2"
 			]
