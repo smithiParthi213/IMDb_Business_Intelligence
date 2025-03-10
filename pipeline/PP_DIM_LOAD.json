@@ -1,0 +1,49 @@
+{
+	"name": "PP_DIM_LOAD",
+	"properties": {
+		"activities": [
+			{
+				"name": "Principals",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Principals",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"AN11\""
+						},
+						"datasetParameters": {
+							"source1": {
+								"schema": "SILVER",
+								"tableName": "TITLE_PRINCIPALS_STG"
+							},
+							"MAXIDprincipals": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_PRINCIPALS"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_PRINCIPALS"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
