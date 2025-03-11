@@ -1,5 +1,5 @@
 {
-	"name": "dataflow1",
+	"name": "DF_FACT_DIM",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
@@ -58,25 +58,25 @@
 			],
 			"transformations": [
 				{
-					"name": "join1"
+					"name": "JoinRatingEpisode"
 				},
 				{
-					"name": "join3"
+					"name": "joinnamebasics"
 				},
 				{
-					"name": "join4"
+					"name": "jointitlebasics"
 				},
 				{
-					"name": "select1"
+					"name": "selecttbl"
 				},
 				{
-					"name": "derivedColumn1"
+					"name": "derivedColumn"
 				},
 				{
-					"name": "join5"
+					"name": "joinPrincipal"
 				},
 				{
-					"name": "join6"
+					"name": "jointitlebasicsstg"
 				}
 			],
 			"scriptLines": [
@@ -171,18 +171,18 @@
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join1",
-				"join5, NAMEBASICS join(TITLEPRINCIPALS_NCONST == NCONST,",
+				"     broadcast: 'auto')~> JoinRatingEpisode",
+				"joinPrincipal, NAMEBASICS join(TITLEPRINCIPALS_NCONST == NCONST,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join3",
-				"join3, TITLEBASICS join(TITLEPRINCIPALS_SK == TITLEBASICS_ID_SK,",
+				"     broadcast: 'auto')~> joinnamebasics",
+				"joinnamebasics, TITLEBASICS join(TITLEPRINCIPALS_SK == TITLEBASICS_ID_SK,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join4",
-				"join6 select(mapColumn(",
+				"     broadcast: 'auto')~> jointitlebasics",
+				"jointitlebasicsstg select(mapColumn(",
 				"          TITLEBASICS_ID_SK,",
 				"          NAMEBASICS_SK,",
 				"          TITLEPRINCIPALS_SK,",
@@ -194,21 +194,21 @@
 				"          NUMVOTES",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 derive(FactID = uuid(),",
+				"     skipDuplicateMapOutputs: true) ~> selecttbl",
+				"selecttbl derive(FactID = uuid(),",
 				"          DI_LOAD_DATE = currentDate(),",
-				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn1",
-				"join1, PRINCIPALS join(RATINGS@TCONST == TITLEPRINCIPAL_TCONST,",
+				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn",
+				"JoinRatingEpisode, PRINCIPALS join(RATINGS@TCONST == TITLEPRINCIPAL_TCONST,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join5",
-				"join4, TitleBasicsStg join(TITLEBASICS_TCONST == TitleBasicsStg@TCONST,",
+				"     broadcast: 'auto')~> joinPrincipal",
+				"jointitlebasics, TitleBasicsStg join(TITLEBASICS_TCONST == TitleBasicsStg@TCONST,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join6",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     broadcast: 'auto')~> jointitlebasicsstg",
+				"derivedColumn sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     deletable:false,",
 				"     insertable:true,",
