@@ -143,7 +143,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> sourceTBdim",
-				"sourceAKASstg, sourceLanguageDim join(LANGUAGE == ISO_LANGUAGE_NAMES,",
+				"sourceAKASstg, sourceLanguageDim join(LANGUAGE == LANGUAGE_ABBR,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
