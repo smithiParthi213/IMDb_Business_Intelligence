@@ -1,0 +1,87 @@
+{
+	"name": "PL_NameBasics_DIM_LOAD",
+	"properties": {
+		"activities": [
+			{
+				"name": "DF_Name_Basics_DIM_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_NameBasics_Dim",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP-21\""
+						},
+						"datasetParameters": {
+							"sourceNameBasicsSTG": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "NAME_BASICS_STG",
+									"type": "Expression"
+								}
+							},
+							"NBdimMaxID": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_NAME_BASICS",
+									"type": "Expression"
+								}
+							},
+							"sourceProfessionDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_PROFESSION",
+									"type": "Expression"
+								}
+							},
+							"sourceNBdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_NAME_BASICS",
+									"type": "Expression"
+								}
+							},
+							"sinkNBdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_NAME_BASICS",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
