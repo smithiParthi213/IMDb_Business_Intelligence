@@ -1,0 +1,208 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "RATINGS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "EPISODES"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "NAMEBASICS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "PRINCIPALS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TITLEBASICS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "Maxid"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "join4"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "join5"
+				},
+				{
+					"name": "join6"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          TCONST as string,",
+				"          AVERAGERATING as double,",
+				"          NUMVOTES as decimal(38,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> RATINGS",
+				"source(output(",
+				"          TCONST as string,",
+				"          PARENTTCONST as string,",
+				"          SEASONNUMBER as decimal(38,0),",
+				"          EPISODENUMBER as decimal(38,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> EPISODES",
+				"source(output(",
+				"          NAMEBASICS_SK as decimal(38,0),",
+				"          NAMEBASICS_DK as string,",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(4,0),",
+				"          DEATHYEAR as decimal(4,0),",
+				"          PROFESSIONID_SK as decimal(10,0),",
+				"          KNOWNFORTITLES as string,",
+				"          EFFECTIVE_START_DATE as date,",
+				"          EFFECTIVE_END_DATE as date,",
+				"          IS_ACTIVE as decimal(5,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> NAMEBASICS",
+				"source(output(",
+				"          TITLEPRINCIPALS_SK as decimal(38,0),",
+				"          TITLEPRINCIPAL_TCONST as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLEPRINCIPALS_NCONST as string,",
+				"          CATEGORY as string,",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> PRINCIPALS",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TITLEBASICS",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> Maxid",
+				"RATINGS, EPISODES join(RATINGS@TCONST == EPISODES@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join5, NAMEBASICS join(TITLEPRINCIPALS_NCONST == NCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3, TITLEBASICS join(TITLEPRINCIPALS_SK == TITLEBASICS_ID_SK,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join4",
+				"join6 select(mapColumn(",
+				"          TCONST = RATINGS@TCONST,",
+				"          AVERAGERATING,",
+				"          NUMVOTES,",
+				"          DI_JOB_ID = RATINGS@DI_JOB_ID,",
+				"          DI_LOAD_DT = RATINGS@DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 keyGenerate(output({undefined} as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive() ~> derivedColumn1",
+				"join1, PRINCIPALS join(EPISODES@TCONST == TITLEPRINCIPAL_TCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join5",
+				"join4, Maxid join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join6",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true) ~> sink1"
+			]
+		}
+	}
+}
