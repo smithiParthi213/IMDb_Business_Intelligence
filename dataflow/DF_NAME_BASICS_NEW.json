@@ -1,0 +1,215 @@
+{
+	"name": "DF_NAME_BASICS_NEW",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcNBStg"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcDimProfession"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcNBDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcMaxIDNameBasic"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "filterExitingRows"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select2"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_ID as string (\"SP\")",
+				"}",
+				"source(output(",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as integer,",
+				"          DEATHYEAR as integer,",
+				"          PRIMARYPROFESSION as string,",
+				"          KNOWNFORTITLES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcNBStg",
+				"source(output(",
+				"          PROFESSIONID_SK as integer,",
+				"          PROFESSION_NAME as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcDimProfession",
+				"source(output(",
+				"          NAMEBASICS_SK as integer,",
+				"          NAMEBASICS_DK as string,",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as integer,",
+				"          DEATHYEAR as integer,",
+				"          PROFESSIONID_SK as decimal(10,0),",
+				"          KNOWNFORTITLES as string,",
+				"          EFFECTIVE_START_DATE as date,",
+				"          EFFECTIVE_END_DATE as date,",
+				"          IS_ACTIVE as integer,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcNBDim",
+				"source(output(",
+				"          MAXNB_SK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(NAMEBASICS_SK),0) as MaxNB_SK from GOLD.DIM_NAME_BASICS',",
+				"     format: 'query') ~> srcMaxIDNameBasic",
+				"srcNBStg, srcDimProfession join(PRIMARYPROFESSION == PROFESSION_NAME,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, srcNBDim join(srcNBStg@NCONST == srcNBDim@NCONST",
+				"     && srcDimProfession@PROFESSIONID_SK == srcNBDim@PROFESSIONID_SK,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 filter(isNull(srcNBDim@DEATHYEAR)) ~> filterExitingRows",
+				"filterExitingRows derive(RowAction = iif(!isNull(NAMEBASICS_DK) && IS_ACTIVE == 1 && srcNBStg@DEATHYEAR != srcNBDim@DEATHYEAR, 'update', 'insert')) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          NAMEBASICS_SK,",
+				"          NAMEBASICS_DK,",
+				"          NCONST = srcNBStg@NCONST,",
+				"          PRIMARYNAME = srcNBStg@PRIMARYNAME,",
+				"          BIRTHYEAR = srcNBStg@BIRTHYEAR,",
+				"          DEATHYEAR = srcNBStg@DEATHYEAR,",
+				"          KNOWNFORTITLES = srcNBStg@KNOWNFORTITLES,",
+				"          PROFESSIONID_SK = srcDimProfession@PROFESSIONID_SK,",
+				"          PROFESSIONID_SK = srcNBDim@PROFESSIONID_SK,",
+				"          EFFECTIVE_START_DATE,",
+				"          EFFECTIVE_END_DATE,",
+				"          IS_ACTIVE,",
+				"          RowAction",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, srcMaxIDNameBasic join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3 keyGenerate(output(MySK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(NAMEBASICS_SK = MySK +MAXNB_SK,",
+				"          NAMEBASICS_DK = iif(RowAction == 'insert', abs(toInteger(crc32(concat(PRIMARYNAME,NCONST)))), toInteger(NAMEBASICS_DK)),",
+				"          EFFECTIVE_START_DATE = currentDate(),",
+				"          EFFECTIVE_END_DATE = iif(RowAction == 'update', currentDate(), toDate('9999-12-31')),",
+				"          DI_job_id = $Job_ID,",
+				"          DI_LOAD_DT = currentDate(),",
+				"          IS_ACTIVE = iif(RowAction == 'update', '0', '1')) ~> derivedColumn2",
+				"derivedColumn2 select(mapColumn(",
+				"          NAMEBASICS_SK,",
+				"          NAMEBASICS_DK,",
+				"          NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          KNOWNFORTITLES,",
+				"          PROFESSIONID_SK,",
+				"          EFFECTIVE_START_DATE,",
+				"          EFFECTIVE_END_DATE,",
+				"          IS_ACTIVE,",
+				"          DI_job_id,",
+				"          DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          NAMEBASICS_SK,",
+				"          NAMEBASICS_DK,",
+				"          NCONST,",
+				"          PRIMARYNAME,",
+				"          BIRTHYEAR,",
+				"          DEATHYEAR,",
+				"          KNOWNFORTITLES,",
+				"          PROFESSIONID_SK,",
+				"          EFFECTIVE_START_DATE,",
+				"          EFFECTIVE_END_DATE,",
+				"          IS_ACTIVE,",
+				"          DI_JOB_ID = DI_job_id,",
+				"          DI_LOAD_DT",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

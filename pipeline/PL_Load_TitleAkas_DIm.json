@@ -1,0 +1,97 @@
+{
+	"name": "PL_Load_TitleAkas_DIm",
+	"properties": {
+		"activities": [
+			{
+				"name": "DIM_TITLE_AKAS_Load",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_akas_new",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"sp-21\""
+						},
+						"datasetParameters": {
+							"sourceAKASstg": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_AKAS_STG",
+									"type": "Expression"
+								}
+							},
+							"sourceLanguageDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_LANGUAGE",
+									"type": "Expression"
+								}
+							},
+							"sourceRegionDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_REGION",
+									"type": "Expression"
+								}
+							},
+							"AkasMaxID": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_AKAS",
+									"type": "Expression"
+								}
+							},
+							"sourceTBdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_BASICS",
+									"type": "Expression"
+								}
+							},
+							"sinkAKASdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_AKAS",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}

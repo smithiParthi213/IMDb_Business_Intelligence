@@ -1,0 +1,53 @@
+{
+	"name": "Test_CREW_DIM",
+	"properties": {
+		"activities": [
+			{
+				"name": "BRIDGE_CREW_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_CREW_BRIDGE2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"Job_id": "\"Dale 06\""
+						},
+						"datasetParameters": {
+							"sourceCrewSTG": {
+								"schema": "SILVER",
+								"tableName": "TITLE_CREW_STG"
+							},
+							"sourceTTBDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_BASICS"
+							},
+							"sourceNameBasicsDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "BRIDGE_CREW"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
