@@ -16,31 +16,71 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "DF_TITLE_AKAS_DIM",
+						"referenceName": "DF_akas_new",
 						"type": "DataFlowReference",
 						"parameters": {
-							"job_id": "\"Dale_06\""
+							"job_id": "\"sp-21\""
 						},
 						"datasetParameters": {
-							"srcTitleAkas": {
-								"schema": "SILVER",
-								"tableName": "TITLE_AKAS_STG"
+							"sourceAKASstg": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_AKAS_STG",
+									"type": "Expression"
+								}
 							},
-							"srcRegion": {
-								"schema": "GOLD",
-								"tableName": "DIM_REGION"
+							"sourceLanguageDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_LANGUAGE",
+									"type": "Expression"
+								}
 							},
-							"srcLanguage": {
-								"schema": "GOLD",
-								"tableName": "DIM_LANGUAGE"
+							"sourceRegionDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_REGION",
+									"type": "Expression"
+								}
 							},
-							"srcTitleBasic": {
-								"schema": "GOLD",
-								"tableName": "DIM_TITLE_BASICS"
+							"AkasMaxID": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_AKAS",
+									"type": "Expression"
+								}
 							},
-							"sinkTitleAkas": {
-								"schema": "GOLD",
-								"tableName": "DIM_TITLE_AKAS"
+							"sourceTBdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_BASICS",
+									"type": "Expression"
+								}
+							},
+							"sinkAKASdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_AKAS",
+									"type": "Expression"
+								}
 							}
 						}
 					},
