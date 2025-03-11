@@ -44,7 +44,7 @@
 						"referenceName": "Snowflake_imdb_db",
 						"type": "DatasetReference"
 					},
-					"name": "Maxid"
+					"name": "TitleBasicsStg"
 				}
 			],
 			"sinks": [
@@ -68,9 +68,6 @@
 				},
 				{
 					"name": "select1"
-				},
-				{
-					"name": "surrogateKey1"
 				},
 				{
 					"name": "derivedColumn1"
@@ -151,9 +148,22 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'table') ~> TITLEBASICS",
-				"source(allowSchemaDrift: true,",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTIMEMINUTES as decimal(38,0),",
+				"          GENRES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'table') ~> Maxid",
+				"     format: 'table') ~> TitleBasicsStg",
 				"RATINGS, EPISODES join(RATINGS@TCONST == EPISODES@TCONST,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
@@ -170,25 +180,20 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join4",
 				"join6 select(mapColumn(",
-				"          TCONST = RATINGS@TCONST,",
-				"          AVERAGERATING,",
-				"          NUMVOTES,",
-				"          DI_JOB_ID = RATINGS@DI_JOB_ID,",
-				"          DI_LOAD_DT = RATINGS@DI_LOAD_DT",
+				"          {} = RATINGS@TCONST",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 keyGenerate(output({undefined} as long),",
-				"     startAt: 1L,",
-				"     stepValue: 1L) ~> surrogateKey1",
-				"surrogateKey1 derive() ~> derivedColumn1",
-				"join1, PRINCIPALS join(EPISODES@TCONST == TITLEPRINCIPAL_TCONST,",
+				"select1 derive(FactID = uuid(),",
+				"          DI_LOAD_DATE = currentDate(),",
+				"          DI_JOB_ID = ERROR_FUNCTION('')) ~> derivedColumn1",
+				"join1, PRINCIPALS join(RATINGS@TCONST == TITLEPRINCIPAL_TCONST,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join5",
-				"join4, Maxid join(1==1,",
-				"     joinType:'cross',",
+				"join4, TitleBasicsStg join(TITLEBASICS_TCONST == TitleBasicsStg@TCONST,",
+				"     joinType:'inner',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> join6",
