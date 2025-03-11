@@ -1,0 +1,57 @@
+{
+	"name": "Test_NameBasics",
+	"properties": {
+		"activities": [
+			{
+				"name": "NAME_BASIC_DIM_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_NAME_BASICS_NEW",
+						"type": "DataFlowReference",
+						"parameters": {
+							"Job_ID": "\"SP\""
+						},
+						"datasetParameters": {
+							"srcNBStg": {
+								"schema": "SILVER",
+								"tableName": "NAME_BASICS_STG"
+							},
+							"srcDimProfession": {
+								"schema": "GOLD",
+								"tableName": "DIM_PROFESSION"
+							},
+							"srcNBDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"srcMaxIDNameBasic": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
