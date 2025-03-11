@@ -1,0 +1,238 @@
+{
+	"name": "DF_FACT_DIM",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "RATINGS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "EPISODES"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "NAMEBASICS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "PRINCIPALS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TITLEBASICS"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TitleBasicsStg"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "JoinRatingEpisode"
+				},
+				{
+					"name": "joinnamebasics"
+				},
+				{
+					"name": "jointitlebasics"
+				},
+				{
+					"name": "selecttbl"
+				},
+				{
+					"name": "derivedColumn"
+				},
+				{
+					"name": "joinPrincipal"
+				},
+				{
+					"name": "jointitlebasicsstg"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"AN11\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          AVERAGERATING as double,",
+				"          NUMVOTES as decimal(38,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> RATINGS",
+				"source(output(",
+				"          TCONST as string,",
+				"          PARENTTCONST as string,",
+				"          SEASONNUMBER as decimal(38,0),",
+				"          EPISODENUMBER as decimal(38,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> EPISODES",
+				"source(output(",
+				"          NAMEBASICS_SK as decimal(38,0),",
+				"          NAMEBASICS_DK as string,",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(4,0),",
+				"          DEATHYEAR as decimal(4,0),",
+				"          PROFESSIONID_SK as decimal(10,0),",
+				"          KNOWNFORTITLES as string,",
+				"          EFFECTIVE_START_DATE as date,",
+				"          EFFECTIVE_END_DATE as date,",
+				"          IS_ACTIVE as decimal(5,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> NAMEBASICS",
+				"source(output(",
+				"          TITLEPRINCIPALS_SK as decimal(38,0),",
+				"          TITLEPRINCIPAL_TCONST as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLEPRINCIPALS_NCONST as string,",
+				"          CATEGORY as string,",
+				"          JOB as string,",
+				"          CHARACTERS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> PRINCIPALS",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TITLEBASICS",
+				"source(output(",
+				"          TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          ISADULT as decimal(38,0),",
+				"          STARTYEAR as decimal(38,0),",
+				"          ENDYEAR as decimal(38,0),",
+				"          RUNTIMEMINUTES as decimal(38,0),",
+				"          GENRES as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleBasicsStg",
+				"RATINGS, EPISODES join(RATINGS@TCONST == EPISODES@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> JoinRatingEpisode",
+				"joinPrincipal, NAMEBASICS join(TITLEPRINCIPALS_NCONST == NCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinnamebasics",
+				"joinnamebasics, TITLEBASICS join(TITLEPRINCIPALS_SK == TITLEBASICS_ID_SK,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> jointitlebasics",
+				"jointitlebasicsstg select(mapColumn(",
+				"          TITLEBASICS_ID_SK,",
+				"          NAMEBASICS_SK,",
+				"          TITLEPRINCIPALS_SK,",
+				"          RUNTIMEMINUTES,",
+				"          SEASONNUMBER,",
+				"          EPISODENUMBER,",
+				"          ISADULT,",
+				"          AVERAGERATING,",
+				"          NUMVOTES",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selecttbl",
+				"selecttbl derive(FactID = uuid(),",
+				"          DI_LOAD_DATE = currentDate(),",
+				"          DI_JOB_ID = $JOB_ID) ~> derivedColumn",
+				"JoinRatingEpisode, PRINCIPALS join(RATINGS@TCONST == TITLEPRINCIPAL_TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinPrincipal",
+				"jointitlebasics, TitleBasicsStg join(TITLEBASICS_TCONST == TitleBasicsStg@TCONST,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> jointitlebasicsstg",
+				"derivedColumn sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          FactID,",
+				"          TITLEBASICS_ID_SK,",
+				"          NAMEBASICS_SK,",
+				"          TITLEPRINCIPALS_SK,",
+				"          RUNTIMEMINUTES,",
+				"          SEASONNUMBER,",
+				"          EPISODENUMBER,",
+				"          ISADULT,",
+				"          AVERAGERATING,",
+				"          NUMVOTES,",
+				"          DI_LOAD_DATE,",
+				"          DI_JOB_ID",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
