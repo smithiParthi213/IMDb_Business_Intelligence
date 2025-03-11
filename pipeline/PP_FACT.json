@@ -1,0 +1,65 @@
+{
+	"name": "PP_FACT",
+	"properties": {
+		"activities": [
+			{
+				"name": "FACT",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_FACT_DIM",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"AN11\""
+						},
+						"datasetParameters": {
+							"RATINGS": {
+								"schema": "SILVER",
+								"tableName": "TITLE_RATINGS_STG"
+							},
+							"EPISODES": {
+								"schema": "SILVER",
+								"tableName": "TITLE_EPISODE_STG"
+							},
+							"NAMEBASICS": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"PRINCIPALS": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_PRINCIPALS"
+							},
+							"TITLEBASICS": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_BASICS"
+							},
+							"TitleBasicsStg": {
+								"schema": "SILVER",
+								"tableName": "TITLE_BASICS_STG"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "FACT_MOVIEDETAILS"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": []
+	}
+}
