@@ -47,7 +47,7 @@
 					"name": "join1"
 				},
 				{
-					"name": "join2"
+					"name": "join02"
 				},
 				{
 					"name": "join3"
@@ -134,8 +134,8 @@
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
-				"     broadcast: 'auto')~> join2",
-				"join2, sourceNBdim join(sourceNameBasicsSTG@NCONST == sourceNBdim@NCONST",
+				"     broadcast: 'auto')~> join02",
+				"join02, sourceNBdim join(sourceNameBasicsSTG@NCONST == sourceNBdim@NCONST",
 				"     && sourceProfessionDim@PROFESSIONID_SK == sourceNBdim@PROFESSIONID_SK,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
