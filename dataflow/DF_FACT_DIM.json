@@ -229,7 +229,7 @@
 				"          ISADULT,",
 				"          AVERAGERATING,",
 				"          NUMVOTES,",
-				"          DI_LOAD_DATE,",
+				"          DI_LOAD_DT = DI_LOAD_DATE,",
 				"          DI_JOB_ID",
 				"     )) ~> sink1"
 			]
