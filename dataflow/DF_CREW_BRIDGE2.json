@@ -1,0 +1,168 @@
+{
+	"name": "DF_CREW_BRIDGE2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCrewSTG"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceTTBDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceNameBasicsDim"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select3"
+				},
+				{
+					"name": "surrogateKey1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     Job_id as string (\"Dale 06\")",
+				"}",
+				"source(output(",
+				"          TCONST as string,",
+				"          DIRECTORS as string,",
+				"          WRITERS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceCrewSTG",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as integer,",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as integer,",
+				"          STARTYEAR as integer,",
+				"          ENDYEAR as integer,",
+				"          DI_JOB_ID as integer,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceTTBDim",
+				"source(output(",
+				"          NAMEBASICS_SK as integer,",
+				"          NAMEBASICS_DK as string,",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(4,0),",
+				"          DEATHYEAR as decimal(4,0),",
+				"          PROFESSIONID_SK as decimal(10,0),",
+				"          KNOWNFORTITLES as string,",
+				"          EFFECTIVE_START_DATE as date,",
+				"          EFFECTIVE_END_DATE as date,",
+				"          IS_ACTIVE as decimal(5,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceNameBasicsDim",
+				"sourceCrewSTG, sourceTTBDim lookup(TCONST == TITLEBASICS_TCONST,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 select(mapColumn(",
+				"          DIRECTORS,",
+				"          WRITERS,",
+				"          TITLEBASICS_ID_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1, sourceNameBasicsDim lookup(DIRECTORS == NCONST",
+				"     && WRITERS == NCONST,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup2 select(mapColumn(",
+				"          DIRECTORS,",
+				"          WRITERS,",
+				"          TITLEBASICS_ID_SK,",
+				"          NAMEBASICS_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2 derive(RoleType = iif(DIRECTORS != 'UNKNOWN', 'Director', 'Writer'),",
+				"          DI_JOB_ID = $Job_id,",
+				"          DI_LOAD_DT = currentDate()) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          TITLEBASICS_ID_SK,",
+				"          NAMEBASICS_SK,",
+				"          RoleType,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select3",
+				"select3 keyGenerate(output(CREW_ID_SK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          CREW_ID_SK,",
+				"          TITLEBASICS_ID_SK,",
+				"          NAMEBASICS_SK,",
+				"          ROLETYPE = RoleType,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
