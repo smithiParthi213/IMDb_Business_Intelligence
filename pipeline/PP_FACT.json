@@ -28,7 +28,7 @@
 							},
 							"EPISODES": {
 								"schema": "SILVER",
-								"tableName": "TITLE_EPISODES_STG"
+								"tableName": "TITLE_EPISODE_STG"
 							},
 							"NAMEBASICS": {
 								"schema": "GOLD",
