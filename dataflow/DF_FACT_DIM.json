@@ -219,7 +219,7 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     stageInsert: true,",
 				"     mapColumn(",
-				"          FactID,",
+				"          FACTID = FactID,",
 				"          TITLEBASICS_ID_SK,",
 				"          NAMEBASICS_SK,",
 				"          TITLEPRINCIPALS_SK,",
