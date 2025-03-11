@@ -1,0 +1,258 @@
+{
+	"name": "DF_akas_new",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceAKASstg"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceLanguageDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceRegionDim"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "AkasMaxID"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sourceTBdim"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkAKASdim"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "selectSTGwithLang"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "selectSTGwithRegion"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "derivedSKValue"
+				},
+				{
+					"name": "selectSinkCols"
+				},
+				{
+					"name": "join4"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"sp-21\")",
+				"}",
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as integer,",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as integer,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceAKASstg",
+				"source(output(",
+				"          LANGUAGEID_SK as integer,",
+				"          ISO_LANGUAGE_NAMES as string,",
+				"          LANGUAGE_ABBR as string,",
+				"          ENDONYMS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceLanguageDim",
+				"source(output(",
+				"          REGIONID_SK as integer,",
+				"          REGION_CODE as string,",
+				"          REGION_NAME as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceRegionDim",
+				"source(output(",
+				"          MAXAKAS_SK as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'select NVL(MAX(AKAS_ID_SK),0) as MaxAKAS_SK from GOLD.DIM_TITLE_AKAS',",
+				"     format: 'query') ~> AkasMaxID",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as integer,",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as integer,",
+				"          STARTYEAR as integer,",
+				"          ENDYEAR as integer,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> sourceTBdim",
+				"sourceAKASstg, sourceLanguageDim join(upper(LANGUAGE) == upper(LANGUAGE_ABBR),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 select(mapColumn(",
+				"          TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          REGION,",
+				"          LANGUAGE,",
+				"          LANGUAGEID_SK,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSTGwithLang",
+				"selectSTGwithLang, sourceRegionDim join(REGION == upper(REGION_CODE),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          REGION,",
+				"          REGIONID_SK,",
+				"          LANGUAGE,",
+				"          LANGUAGEID_SK,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSTGwithRegion",
+				"select1, AkasMaxID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3 keyGenerate(output(mySK as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"surrogateKey1 derive(mySK = mySK + MAXAKAS_SK,",
+				"          job_id = $job_id,",
+				"          load_dt = currentDate(),",
+				"          TITLEBASICS_ID_SK = iif(isNull(TITLEBASICS_ID_SK), -1,TITLEBASICS_ID_SK),",
+				"          LANGUAGEID_SK = iif(isNull(LANGUAGEID_SK), -1,LANGUAGEID_SK),",
+				"          REGIONID_SK = iif(isNull(REGIONID_SK), -1,REGIONID_SK)) ~> derivedSKValue",
+				"derivedSKValue select(mapColumn(",
+				"          AKAS_ID_SK = mySK,",
+				"          LANGUAGEID_SK,",
+				"          REGIONID_SK,",
+				"          TITLEBASICS_ID_SK,",
+				"          TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          job_id,",
+				"          load_dt",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectSinkCols",
+				"selectSTGwithRegion, sourceTBdim join(TITLEID == TITLEBASICS_TCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join4",
+				"join4 select(mapColumn(",
+				"          TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          REGIONID_SK,",
+				"          LANGUAGEID_SK,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          TITLEBASICS_ID_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"selectSinkCols sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          AKAS_ID_SK,",
+				"          LANGUAGEID_SK,",
+				"          REGIONID_SK,",
+				"          TITLEBASICS_ID_SK,",
+				"          AKAS_TITLEID = TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          DI_JOB_ID = job_id,",
+				"          DI_LOAD_DT = load_dt",
+				"     )) ~> sinkAKASdim"
+			]
+		}
+	}
+}

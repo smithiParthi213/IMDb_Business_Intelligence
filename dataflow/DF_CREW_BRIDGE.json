@@ -1,0 +1,152 @@
+{
+	"name": "DF_CREW_BRIDGE",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcTitleBasic"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcCrew"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "MaxCrewID"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcNameBasics"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "SourecDataWithSK"
+				},
+				{
+					"name": "unpivot1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "RequiredColumns"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     JOB_ID as string (\"Dale 06\")",
+				"}",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcTitleBasic",
+				"source(output(",
+				"          TCONST as string,",
+				"          DIRECTORS as string,",
+				"          WRITERS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DATE as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcCrew",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'SELECT NVL(MAX(CREW_ID_SK),0) as MaxCREW_ID_SK from GOLD.BRIDGE_CREW',",
+				"     format: 'query') ~> MaxCrewID",
+				"source(output(",
+				"          NAMEBASICS_SK as decimal(38,0),",
+				"          NAMEBASICS_DK as string,",
+				"          NCONST as string,",
+				"          PRIMARYNAME as string,",
+				"          BIRTHYEAR as decimal(4,0),",
+				"          DEATHYEAR as decimal(4,0),",
+				"          PROFESSIONID_SK as decimal(10,0),",
+				"          KNOWNFORTITLES as string,",
+				"          EFFECTIVE_START_DATE as date,",
+				"          EFFECTIVE_END_DATE as date,",
+				"          IS_ACTIVE as decimal(5,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcNameBasics",
+				"srcCrew, MaxCrewID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SourecDataWithSK",
+				"select1 unpivot(output(",
+				"          ROLETYPE as string,",
+				"          nconst as string",
+				"     ),",
+				"     ungroupBy(TCONST),",
+				"     lateral: false,",
+				"     ignoreNullPivots: false) ~> unpivot1",
+				"SourecDataWithSK select(mapColumn(",
+				"          TCONST,",
+				"          DIRECTORS,",
+				"          WRITERS",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"unpivot1, srcTitleBasic join(TCONST == TITLEBASICS_TCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, srcNameBasics join(unpivot1@nconst == srcNameBasics@NCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          ROLETYPE,",
+				"          TITLEBASICS_ID_SK,",
+				"          NAMEBASICS_SK",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequiredColumns",
+				"RequiredColumns derive(DI_JOB_ID = $JOB_ID,",
+				"          DI_JOB_DATE = currentDate()) ~> derivedColumn1"
+			]
+		}
+	}
+}

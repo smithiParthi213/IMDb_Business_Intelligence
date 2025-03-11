@@ -86,6 +86,142 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "DIM_GENRE_Load",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "DIM_LANG_REGION",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Genere_dim",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP-21\""
+						},
+						"datasetParameters": {
+							"SourceTitleBasics": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_BASICS_STG",
+									"type": "Expression"
+								}
+							},
+							"sinktoGold": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_GENRE",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "DIM_TITLE_BASICS_Load",
+				"type": "ExecuteDataFlow",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "DIM_GENRE_Load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_TitleBasics_dim",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"SP-21\""
+						},
+						"datasetParameters": {
+							"SourceTitleBasicsSTG": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_BASICS_STG",
+									"type": "Expression"
+								}
+							},
+							"TBdimMaxID": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_BASICS",
+									"type": "Expression"
+								}
+							},
+							"sourceGenreDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_GENRE",
+									"type": "Expression"
+								}
+							},
+							"sinkTBdimGold": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_BASICS",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
 			}
 		],
 		"annotations": []

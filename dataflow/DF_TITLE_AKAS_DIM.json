@@ -1,0 +1,265 @@
+{
+	"name": "DF_TITLE_AKAS_DIM",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcTitleAkas"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcRegion"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcLanguage"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcTitleBasic"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "srcMaxAkasID"
+				},
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "TitleAkasDim"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Snowflake_imdb_db",
+						"type": "DatasetReference"
+					},
+					"name": "sinkTitleAkas"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joinToRegion"
+				},
+				{
+					"name": "joinToLanguage"
+				},
+				{
+					"name": "RequiredColumns"
+				},
+				{
+					"name": "surrogateKey1"
+				},
+				{
+					"name": "joinToTitleBasic"
+				},
+				{
+					"name": "SourceDataWIthSK"
+				},
+				{
+					"name": "aggregateAkasKeys"
+				},
+				{
+					"name": "joinToTarget"
+				},
+				{
+					"name": "filterExistingRows"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     job_id as string (\"Dale_06\")",
+				"}",
+				"source(output(",
+				"          TITLEID as string,",
+				"          ORDERING as decimal(38,0),",
+				"          TITLE as string,",
+				"          REGION as string,",
+				"          LANGUAGE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as decimal(38,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcTitleAkas",
+				"source(output(",
+				"          REGIONID_SK as decimal(38,0),",
+				"          REGION_CODE as string,",
+				"          REGION_NAME as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcRegion",
+				"source(output(",
+				"          LANGUAGEID_SK as decimal(38,0),",
+				"          ISO_LANGUAGE_NAMES as string,",
+				"          LANGUAGE_ABBR as string,",
+				"          ENDONYMS as string,",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcLanguage",
+				"source(output(",
+				"          TITLEBASICS_ID_SK as decimal(38,0),",
+				"          TITLEBASICS_TCONST as string,",
+				"          TITLETYPE as string,",
+				"          PRIMARYTITLE as string,",
+				"          ORIGINALTITLE as string,",
+				"          GENREID_SK as decimal(38,0),",
+				"          STARTYEAR as decimal(4,0),",
+				"          ENDYEAR as decimal(4,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> srcTitleBasic",
+				"source(output(",
+				"          MAXAKASSK as decimal(38,0)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     query: 'SELECT NVL(MAX(AKAS_ID_SK),0) as MaxAKASSK from GOLD.DIM_TITLE_AKAS',",
+				"     format: 'query') ~> srcMaxAkasID",
+				"source(output(",
+				"          AKAS_ID_SK as decimal(38,0),",
+				"          LANGUAGEID_SK as decimal(38,0),",
+				"          REGIONID_SK as decimal(38,0),",
+				"          TITLEBASICS_ID_SK as string,",
+				"          AKAS_TITLEID as string,",
+				"          ORDERING as decimal(5,0),",
+				"          TITLE as string,",
+				"          TYPES as string,",
+				"          ATTRIBUTES as string,",
+				"          ISORIGINALTITLE as decimal(1,0),",
+				"          DI_JOB_ID as string,",
+				"          DI_LOAD_DT as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table') ~> TitleAkasDim",
+				"filterExistingRows, srcRegion join(REGION == upper(REGION_CODE),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinToRegion",
+				"joinToRegion, srcLanguage join(LANGUAGE == LANGUAGE_ABBR,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinToLanguage",
+				"joinToTitleBasic select(mapColumn(",
+				"          TITLEID,",
+				"          ORDERING = aggregateAkasKeys@ORDERING,",
+				"          TITLE = aggregateAkasKeys@TITLE,",
+				"          TYPES = aggregateAkasKeys@TYPES,",
+				"          ATTRIBUTES = aggregateAkasKeys@ATTRIBUTES,",
+				"          ISORIGINALTITLE = aggregateAkasKeys@ISORIGINALTITLE,",
+				"          MAXAKASSK,",
+				"          CountRow,",
+				"          AKAS_ID_SK,",
+				"          LANGUAGEID_SK = TitleAkasDim@LANGUAGEID_SK,",
+				"          REGIONID_SK = TitleAkasDim@REGIONID_SK,",
+				"          TITLEBASICS_ID_SK = TitleAkasDim@TITLEBASICS_ID_SK,",
+				"          AKAS_TITLEID,",
+				"          REGIONID_SK = srcRegion@REGIONID_SK,",
+				"          LANGUAGEID_SK = srcLanguage@LANGUAGEID_SK,",
+				"          TITLEBASICS_ID_SK = srcTitleBasic@TITLEBASICS_ID_SK,",
+				"          TITLEBASICS_TCONST",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> RequiredColumns",
+				"RequiredColumns keyGenerate(output(RowNum as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKey1",
+				"joinToLanguage, srcTitleBasic join(TITLEID == TITLEBASICS_TCONST,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinToTitleBasic",
+				"srcTitleAkas, srcMaxAkasID join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> SourceDataWIthSK",
+				"SourceDataWIthSK aggregate(groupBy(TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          REGION,",
+				"          LANGUAGE,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          MAXAKASSK),",
+				"     CountRow = countDistinct((TITLEID) + '-' + toString(ORDERING))) ~> aggregateAkasKeys",
+				"aggregateAkasKeys, TitleAkasDim join(TITLEID == AKAS_TITLEID",
+				"     && aggregateAkasKeys@ORDERING == TitleAkasDim@ORDERING,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinToTarget",
+				"joinToTarget filter(isNull(AKAS_TITLEID)&&isNull(TitleAkasDim@ORDERING)) ~> filterExistingRows",
+				"surrogateKey1 derive(AKAS_ID_SK = MAXAKASSK + RowNum,",
+				"          DI_JOB_ID = $job_id,",
+				"          DI_LOAD_DT = currentDate()) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          MAXAKASSK,",
+				"          AKAS_ID_SK,",
+				"          LANGUAGEID_SK,",
+				"          REGIONID_SK,",
+				"          TITLEBASICS_ID_SK,",
+				"          AKAS_TITLEID,",
+				"          TITLEBASICS_TCONST,",
+				"          RowNum,",
+				"          DI_JOB_ID,",
+				"          DI_LOAD_DT",
+				"     )) ~> sinkTitleAkas"
+			]
+		}
+	}
+}
