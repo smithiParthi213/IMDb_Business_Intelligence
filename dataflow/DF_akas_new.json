@@ -234,7 +234,21 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     stageInsert: true) ~> sinkAKASdim"
+				"     stageInsert: true,",
+				"     mapColumn(",
+				"          AKAS_ID_SK,",
+				"          LANGUAGEID_SK,",
+				"          REGIONID_SK,",
+				"          TITLEBASICS_ID_SK,",
+				"          AKAS_TITLEID = TITLEID,",
+				"          ORDERING,",
+				"          TITLE,",
+				"          TYPES,",
+				"          ATTRIBUTES,",
+				"          ISORIGINALTITLE,",
+				"          DI_JOB_ID = job_id,",
+				"          DI_LOAD_DT = load_dt",
+				"     )) ~> sinkAKASdim"
 			]
 		}
 	}
