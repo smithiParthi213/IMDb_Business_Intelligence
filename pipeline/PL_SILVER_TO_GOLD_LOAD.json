@@ -222,6 +222,322 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "DIM_TITLE_AKAS_Load",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DIM_TITLE_BASICS_Load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_akas_new",
+						"type": "DataFlowReference",
+						"parameters": {
+							"job_id": "\"sp-21\""
+						},
+						"datasetParameters": {
+							"sourceAKASstg": {
+								"schema": {
+									"value": "SILVER",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "TITLE_AKAS_STG",
+									"type": "Expression"
+								}
+							},
+							"sourceLanguageDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_LANGUAGE",
+									"type": "Expression"
+								}
+							},
+							"sourceRegionDim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_REGION",
+									"type": "Expression"
+								}
+							},
+							"AkasMaxID": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_AKAS",
+									"type": "Expression"
+								}
+							},
+							"sourceTBdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_BASICS",
+									"type": "Expression"
+								}
+							},
+							"sinkAKASdim": {
+								"schema": {
+									"value": "GOLD",
+									"type": "Expression"
+								},
+								"tableName": {
+									"value": "DIM_TITLE_AKAS",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Principals",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "BRIDGE_CREW_LOAD",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_Principals",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"AN11\""
+						},
+						"datasetParameters": {
+							"source1": {
+								"schema": "SILVER",
+								"tableName": "TITLE_PRINCIPALS_STG"
+							},
+							"MAXIDprincipals": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_PRINCIPALS"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_PRINCIPALS"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "FACT",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Principals",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.00:30:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_FACT_DIM",
+						"type": "DataFlowReference",
+						"parameters": {
+							"JOB_ID": "\"AN11\""
+						},
+						"datasetParameters": {
+							"RATINGS": {
+								"schema": "SILVER",
+								"tableName": "TITLE_RATINGS_STG"
+							},
+							"EPISODES": {
+								"schema": "SILVER",
+								"tableName": "TITLE_EPISODE_STG"
+							},
+							"NAMEBASICS": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"PRINCIPALS": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_PRINCIPALS"
+							},
+							"TITLEBASICS": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_BASICS"
+							},
+							"TitleBasicsStg": {
+								"schema": "SILVER",
+								"tableName": "TITLE_BASICS_STG"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "FACT_MOVIEDETAILS"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "NAME_BASIC_DIM_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "DIM_TITLE_AKAS_Load",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_NAME_BASICS_NEW",
+						"type": "DataFlowReference",
+						"parameters": {
+							"Job_ID": "\"SP\""
+						},
+						"datasetParameters": {
+							"srcNBStg": {
+								"schema": "SILVER",
+								"tableName": "NAME_BASICS_STG"
+							},
+							"srcDimProfession": {
+								"schema": "GOLD",
+								"tableName": "DIM_PROFESSION"
+							},
+							"srcNBDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"srcMaxIDNameBasic": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "BRIDGE_CREW_LOAD",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "NAME_BASIC_DIM_LOAD",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DF_CREW_BRIDGE2",
+						"type": "DataFlowReference",
+						"parameters": {
+							"Job_id": "\"Dale 06\""
+						},
+						"datasetParameters": {
+							"sourceCrewSTG": {
+								"schema": "SILVER",
+								"tableName": "TITLE_CREW_STG"
+							},
+							"sourceTTBDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_TITLE_BASICS"
+							},
+							"sourceNameBasicsDim": {
+								"schema": "GOLD",
+								"tableName": "DIM_NAME_BASICS"
+							},
+							"sink1": {
+								"schema": "GOLD",
+								"tableName": "BRIDGE_CREW"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
 			}
 		],
 		"annotations": []
